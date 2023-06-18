@@ -1,18 +1,13 @@
 package com.pocketbudget.web;
 
-import com.pocketbudget.model.binding.UserAddBindingModel;
-import com.pocketbudget.model.binding.UserLoginBindingModel;
-import com.pocketbudget.model.service.UserAddServiceModel;
+import com.pocketbudget.model.binding.RegisterUserBindingModel;
+import com.pocketbudget.model.service.RegisterUserServiceModel;
 import com.pocketbudget.service.UserService;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.ModelAndView;
-
-import java.security.Principal;
 
 @RestController
 @RequestMapping("/auth")
@@ -29,10 +24,10 @@ public class AuthenticationController {
     }
 
     @PostMapping("/register")
-    public String register(UserAddBindingModel userAddBindingModel, UserDetails userDetails) {
-        userAddBindingModel.setPassword(this.passwordEncoder.encode(userAddBindingModel.getPassword()));
-        this.userService.createUser(this.modelMapper.map(userAddBindingModel, UserAddServiceModel.class));
-        return null;
+    public ResponseEntity<RegisterUserBindingModel> registerUser(@RequestBody RegisterUserBindingModel registerUserBindingModel) {
+        registerUserBindingModel.setPassword(this.passwordEncoder.encode(registerUserBindingModel.getPassword()));
+        RegisterUserBindingModel registerUser = this.userService.registerUser(this.modelMapper.map(registerUserBindingModel, RegisterUserServiceModel.class));
+        return ResponseEntity.ok(registerUser);
     }
 
 }

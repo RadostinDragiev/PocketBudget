@@ -31,11 +31,15 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
+        // FIXME: Fix the security
         http
+                .httpBasic()
+                .and()
                 .authorizeRequests()
                 .antMatchers("/").permitAll()
                 .antMatchers("/**").hasRole("USER")
                 .and()
+                .csrf().disable()
                 .formLogin();
     }
 }
