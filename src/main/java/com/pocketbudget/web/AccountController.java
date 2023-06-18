@@ -7,11 +7,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.ModelAndView;
 
+import java.security.Principal;
+
 @RestController
 @RequestMapping("/accounts")
 public class AccountController {
     @GetMapping("/createAccount")
-    public ModelAndView createAccount(@AuthenticationPrincipal UserDetails userDetails) {
+    public ModelAndView createAccount(@AuthenticationPrincipal UserDetails userDetails, Principal principal) {
         ModelAndView modelAndView = new ModelAndView("create-account");
         modelAndView.addObject("user", userDetails);
         return modelAndView;
