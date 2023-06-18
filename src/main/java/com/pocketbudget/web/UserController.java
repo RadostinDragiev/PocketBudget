@@ -27,7 +27,7 @@ public class UserController {
         return ResponseEntity.ok(userRoles);
     }
 
-    @PutMapping("/{id}/changeRoles")
+    @PatchMapping("/{id}/changeRoles")
     public ResponseEntity<Void> changeUserRoles(@PathVariable("id") String userUUID,
                                                 @RequestBody UserRoleBindingModel userRoleBindingModel) {
         boolean changeUserRoles = this.userService.updateUserRoles(userUUID, userRoleBindingModel.getUserRoles());

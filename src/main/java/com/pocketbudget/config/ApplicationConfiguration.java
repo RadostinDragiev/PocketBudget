@@ -1,5 +1,7 @@
 package com.pocketbudget.config;
 
+import com.pocketbudget.util.DateTimeApplier;
+import com.pocketbudget.util.impl.DateTimeApplierImpl;
 import org.modelmapper.ModelMapper;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -16,5 +18,10 @@ public class ApplicationConfiguration {
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
+    }
+
+    @Bean
+    public DateTimeApplier dateTimeApplier() {
+        return new DateTimeApplierImpl();
     }
 }

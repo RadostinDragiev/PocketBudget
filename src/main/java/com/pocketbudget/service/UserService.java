@@ -9,7 +9,7 @@ import com.pocketbudget.model.service.RegisterUserServiceModel;
 import java.util.Set;
 
 public interface UserService {
-    User getUserByUUID(String userUUID);
+    User getUserByUsername(String username);
 
     RegisterUserBindingModel registerUser(RegisterUserServiceModel registerUserServiceModel);
 

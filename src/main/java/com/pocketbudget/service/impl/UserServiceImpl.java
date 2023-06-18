@@ -32,8 +32,8 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User getUserByUUID(String userUUID) {
-        return this.userRepository.findById(userUUID).orElseThrow(RuntimeException::new);
+    public User getUserByUsername(String username) {
+        return this.userRepository.findByUsername(username).orElseThrow(UnsupportedOperationException::new);
     }
 
     @Override

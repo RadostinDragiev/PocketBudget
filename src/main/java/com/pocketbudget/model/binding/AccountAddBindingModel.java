@@ -15,5 +15,4 @@ public class AccountAddBindingModel {
     private String name;
     private BigDecimal balance;
     private String currency;
-    private String userUUID;
 }
