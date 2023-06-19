@@ -87,4 +87,9 @@ public class AccountServiceImpl implements AccountService {
         Account updatedAccount = this.accountRepository.save(account);
         return this.modelMapper.map(updatedAccount, AccountAddBindingModel.class);
     }
+
+    @Override
+    public Account getAccountByUUID(String accountUUID) {
+        return this.accountRepository.findById(accountUUID).orElseThrow(UnsupportedOperationException::new);
+    }
 }
