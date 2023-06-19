@@ -71,6 +71,7 @@ public class AccountServiceImpl implements AccountService {
 
     @Override
     public AccountAddBindingModel updateAccount(String accountUUID, AccountAddServiceModel accountAddServiceModel) {
+        // FIXME: Fix error handling
         Account account = this.accountRepository.findById(accountUUID).orElseThrow(UnsupportedOperationException::new);
         if (!account.getName().equals(accountAddServiceModel.getName())) {
             account.setName(accountAddServiceModel.getName());
@@ -90,6 +91,7 @@ public class AccountServiceImpl implements AccountService {
 
     @Override
     public Account getAccountByUUID(String accountUUID) {
+        // FIXME: Fix error handling
         return this.accountRepository.findById(accountUUID).orElseThrow(UnsupportedOperationException::new);
     }
 }

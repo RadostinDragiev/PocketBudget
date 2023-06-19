@@ -13,6 +13,7 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 @AllArgsConstructor
 public class RecordDetailsBindingModel {
+    private String uuid;
     private BigDecimal amount;
     private Category category;
     private String notes;
