@@ -9,4 +9,6 @@ import java.util.List;
 @Repository
 public interface AccountRepository extends JpaRepository<Account, String> {
     List<Account> getAllByUser_UUID(String UUID);
+
+    Account getAccountByUUIDAndUser_UUID(String accountUUID, String userUUID);
 }

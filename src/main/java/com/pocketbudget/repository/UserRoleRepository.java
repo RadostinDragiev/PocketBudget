@@ -1,7 +1,7 @@
 package com.pocketbudget.repository;
 
 import com.pocketbudget.model.entity.UserRole;
-import com.pocketbudget.model.entity.UserRoleEnum;
+import com.pocketbudget.model.entity.enums.UserRoleEnum;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

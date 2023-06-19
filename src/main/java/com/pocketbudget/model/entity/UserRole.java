@@ -1,5 +1,6 @@
 package com.pocketbudget.model.entity;
 
+import com.pocketbudget.model.entity.enums.UserRoleEnum;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

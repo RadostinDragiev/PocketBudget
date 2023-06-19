@@ -1,5 +1,7 @@
 package com.pocketbudget.model.entity;
 
+import com.pocketbudget.model.entity.enums.Action;
+import com.pocketbudget.model.entity.enums.Category;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -15,6 +17,9 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Record extends BaseEntity {
+    @Enumerated(EnumType.STRING)
+    private Action action;
+
     @Column(name = "amount", nullable = false)
     private BigDecimal amount;
 

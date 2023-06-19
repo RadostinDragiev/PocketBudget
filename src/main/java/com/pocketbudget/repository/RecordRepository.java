@@ -8,5 +8,5 @@ import java.util.List;
 
 @Repository
 public interface RecordRepository extends JpaRepository<Record, String> {
-    List<Record> getAllByAccount_UUID(String accountUUID);
+    List<Record> getAllByAccount_UUIDOrderByCreatedDateTimeDesc(String accountUUID);
 }

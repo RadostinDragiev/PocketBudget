@@ -1,4 +1,4 @@
-package com.pocketbudget.model.entity;
+package com.pocketbudget.model.entity.enums;
 
 public enum UserRoleEnum {
     ADMIN,

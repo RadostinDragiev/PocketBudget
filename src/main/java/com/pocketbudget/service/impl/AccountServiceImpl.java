@@ -94,4 +94,11 @@ public class AccountServiceImpl implements AccountService {
         // FIXME: Fix error handling
         return this.accountRepository.findById(accountUUID).orElseThrow(UnsupportedOperationException::new);
     }
+
+    @Override
+    public boolean isUserOwner(String username, String accountUUID) {
+        User user = this.userService.getUserByUsername(username);
+        Account account = this.accountRepository.getAccountByUUIDAndUser_UUID(accountUUID, user.getUUID());
+        return account != null;
+    }
 }

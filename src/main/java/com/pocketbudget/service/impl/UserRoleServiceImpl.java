@@ -1,7 +1,7 @@
 package com.pocketbudget.service.impl;
 
 import com.pocketbudget.model.entity.UserRole;
-import com.pocketbudget.model.entity.UserRoleEnum;
+import com.pocketbudget.model.entity.enums.UserRoleEnum;
 import com.pocketbudget.repository.UserRoleRepository;
 import com.pocketbudget.service.UserRoleService;
 import org.springframework.beans.factory.annotation.Autowired;

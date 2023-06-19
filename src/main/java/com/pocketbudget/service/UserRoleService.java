@@ -1,7 +1,7 @@
 package com.pocketbudget.service;
 
 import com.pocketbudget.model.entity.UserRole;
-import com.pocketbudget.model.entity.UserRoleEnum;
+import com.pocketbudget.model.entity.enums.UserRoleEnum;
 
 import java.util.Collection;
 import java.util.Set;

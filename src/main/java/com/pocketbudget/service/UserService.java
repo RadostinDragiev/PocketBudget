@@ -3,7 +3,7 @@ package com.pocketbudget.service;
 import com.pocketbudget.model.binding.RegisterUserBindingModel;
 import com.pocketbudget.model.entity.User;
 import com.pocketbudget.model.entity.UserRole;
-import com.pocketbudget.model.entity.UserRoleEnum;
+import com.pocketbudget.model.entity.enums.UserRoleEnum;
 import com.pocketbudget.model.service.RegisterUserServiceModel;
 
 import java.util.Set;

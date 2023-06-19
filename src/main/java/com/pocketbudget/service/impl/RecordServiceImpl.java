@@ -4,7 +4,9 @@ import com.pocketbudget.model.binding.RecordAddBindingModel;
 import com.pocketbudget.model.binding.RecordDetailsBindingModel;
 import com.pocketbudget.model.entity.Account;
 import com.pocketbudget.model.entity.Record;
+import com.pocketbudget.model.entity.enums.Action;
 import com.pocketbudget.model.service.AccountAddServiceModel;
+import com.pocketbudget.model.service.RecordAddServiceModel;
 import com.pocketbudget.repository.RecordRepository;
 import com.pocketbudget.service.AccountService;
 import com.pocketbudget.service.RecordService;
@@ -14,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
+import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -35,23 +38,53 @@ public class RecordServiceImpl implements RecordService {
 
     @Override
     @Transactional
-    public RecordAddBindingModel createRecord(String accountUUID, RecordAddBindingModel recordAddBindingModel) {
+    public RecordAddBindingModel createRecord(String accountUUID, RecordAddServiceModel recordAddServiceModel) {
         Account account = this.accountService.getAccountByUUID(accountUUID);
-        Record record = this.modelMapper.map(recordAddBindingModel, Record.class);
+        Record record = this.modelMapper.map(recordAddServiceModel, Record.class);
         record.setAccount(account);
         this.dateTimeApplier.applyDateTIme(record);
 
+        Action action = recordAddServiceModel.getAction();
+        AccountAddServiceModel accountAddServiceModel = this.modelMapper.map(account, AccountAddServiceModel.class);
+        BigDecimal accountBalance = accountAddServiceModel.getBalance();
+        BigDecimal recordAmount = record.getAmount();
+        switch (action) {
+            case DEPOSIT:
+                accountAddServiceModel.setBalance(accountBalance.add(recordAmount));
+                break;
+            case WITHDRAW:
+                BigDecimal amountAfterWithdraw = account.getBalance().subtract(recordAmount);
+                // -1 (less); 0 (equal); 1 (greater);
+                int compareTo = amountAfterWithdraw.compareTo(BigDecimal.ZERO);
+                if (compareTo == 1 || compareTo == 0) {
+                    accountAddServiceModel.setBalance(accountBalance.subtract(recordAddServiceModel.getAmount()));
+                } else {
+                    // FIXME: Fix error handling
+                    throw new UnsupportedOperationException();
+                }
+                break;
+            case TRANSFER:
+                String targetAccountUUID = recordAddServiceModel.getTargetAccountUUID();
+                if (!targetAccountUUID.isEmpty()) {
+                    Account targetAccount = this.accountService.getAccountByUUID(targetAccountUUID);
+                    targetAccount.setBalance(targetAccount.getBalance().add(recordAmount));
+                    this.accountService.updateAccount(targetAccountUUID, this.modelMapper.map(targetAccount, AccountAddServiceModel.class));
+
+                    accountAddServiceModel.setBalance(account.getBalance().subtract(record.getAmount()));
+                }
+                // TODO: Fix error handling
+                break;
+        }
+
+        this.accountService.updateAccount(accountUUID, accountAddServiceModel);
         Record savedRecord = this.recordRepository.saveAndFlush(record);
 
-        AccountAddServiceModel accountAddServiceModel = this.modelMapper.map(account, AccountAddServiceModel.class);
-        accountAddServiceModel.setBalance(accountAddServiceModel.getBalance().subtract(recordAddBindingModel.getAmount()));
-        this.accountService.updateAccount(accountUUID, accountAddServiceModel);
         return this.modelMapper.map(savedRecord, RecordAddBindingModel.class);
     }
 
     @Override
     public List<RecordDetailsBindingModel> getAllRecordsByAccountUUID(String accountUUID) {
-        List<Record> allByAccountUuid = this.recordRepository.getAllByAccount_UUID(accountUUID);
+        List<Record> allByAccountUuid = this.recordRepository.getAllByAccount_UUIDOrderByCreatedDateTimeDesc(accountUUID);
         return Arrays.stream(this.modelMapper.map(allByAccountUuid, RecordDetailsBindingModel[].class)).collect(Collectors.toList());
     }
 }

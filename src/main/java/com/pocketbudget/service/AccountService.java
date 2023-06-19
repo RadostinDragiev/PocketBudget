@@ -17,4 +17,6 @@ public interface AccountService {
     AccountAddBindingModel updateAccount(String accountUUID, AccountAddServiceModel accountAddServiceModel);
 
     Account getAccountByUUID(String accountUUID);
+
+    boolean isUserOwner(String username, String accountUUID);
 }
