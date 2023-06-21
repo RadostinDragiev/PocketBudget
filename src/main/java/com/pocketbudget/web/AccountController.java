@@ -48,12 +48,12 @@ public class AccountController {
         AccountAddServiceModel accountAddServiceModel = this.modelMapper.map(accountAddBindingModel, AccountAddServiceModel.class);
         accountAddServiceModel.setUsername(userDetails.getUsername());
         Optional<AccountAddBindingModel> accountOpt = this.accountService.createAccount(accountAddServiceModel);
-        return accountOpt.isEmpty() ? ResponseEntity
+        return accountOpt.<ResponseEntity<AccountAddBindingModel>>map(addBindingModel -> ResponseEntity
                 .created(uriComponentsBuilder
-                        .path("/accounts/{accountUUID}")
-                        .buildAndExpand(accountOpt.get().getUUID())
+                        .path("/accounts/getAccount/{accountUUID}")
+                        .buildAndExpand(addBindingModel.getUUID())
                         .toUri())
-                .build() : ResponseEntity.unprocessableEntity().build();
+                .build()).orElseGet(() -> ResponseEntity.unprocessableEntity().build());
     }
 
     @PatchMapping("/updateAccount/{id}")

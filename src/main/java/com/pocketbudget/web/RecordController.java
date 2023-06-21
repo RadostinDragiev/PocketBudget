@@ -5,7 +5,6 @@ import com.pocketbudget.model.binding.RecordDetailsBindingModel;
 import com.pocketbudget.model.service.RecordAddServiceModel;
 import com.pocketbudget.service.AccountService;
 import com.pocketbudget.service.RecordService;
-import com.pocketbudget.util.ValidationUtil;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -24,14 +23,12 @@ public class RecordController {
     private final RecordService recordService;
     private final AccountService accountService;
     private final ModelMapper modelMapper;
-    private final ValidationUtil validationUtil;
 
     @Autowired
-    public RecordController(RecordService recordService, AccountService accountService, ModelMapper modelMapper, ValidationUtil validationUtil) {
+    public RecordController(RecordService recordService, AccountService accountService, ModelMapper modelMapper) {
         this.recordService = recordService;
         this.accountService = accountService;
         this.modelMapper = modelMapper;
-        this.validationUtil = validationUtil;
     }
 
     @GetMapping("/{accountId}/getRecord/{recordId}")
@@ -63,8 +60,11 @@ public class RecordController {
         Optional<RecordAddBindingModel> recordOpt = this.recordService.createRecord(accountUUID, this.modelMapper.map(recordAddBindingModel, RecordAddServiceModel.class));
 
         return recordOpt.<ResponseEntity<RecordAddBindingModel>>map(addBindingModel -> ResponseEntity
-                .created(uriComponentsBuilder.path("/{accountId}/getRecord/{recordId}").buildAndExpand(accountUUID, addBindingModel.getUUID()).toUri())
-                .build()).orElseGet(() -> ResponseEntity.unprocessableEntity().build());
+                .created(uriComponentsBuilder.path("/records/{accountId}/getRecord/{recordId}")
+                        .buildAndExpand(accountUUID, addBindingModel.getUUID())
+                        .toUri())
+                .build())
+                .orElseGet(() -> ResponseEntity.unprocessableEntity().build());
 
     }
 }
