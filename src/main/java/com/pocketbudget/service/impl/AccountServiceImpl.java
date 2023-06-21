@@ -14,8 +14,10 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.transaction.Transactional;
 import java.util.Currency;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -35,13 +37,22 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
-    public AccountAddBindingModel createAccount(AccountAddServiceModel accountAddServiceModel) {
+    public Optional<AccountAddBindingModel> createAccount(AccountAddServiceModel accountAddServiceModel) {
         User user = this.userService.getUserByUsername(accountAddServiceModel.getUsername());
         Account account = this.modelMapper.map(accountAddServiceModel, Account.class);
         account.setUser(user);
         this.dateTimeApplier.applyDateTIme(account);
 
-        return this.modelMapper.map(this.accountRepository.saveAndFlush(account), AccountAddBindingModel.class);
+        Optional<Account> createdAccount = Optional.of(this.accountRepository.saveAndFlush(account));
+
+        return Optional.ofNullable(this.modelMapper.map(createdAccount, AccountAddBindingModel.class));
+    }
+
+    @Override
+    public Optional<AccountDetailsBindingModel> getAccountBindingModelByUUID(String uuid, String username) {
+        User userByUsername = this.userService.getUserByUsername(username);
+        Optional<Account> byId = this.accountRepository.getAccountByUUIDAndUser_UUID(uuid, userByUsername.getUUID());
+        return Optional.ofNullable(this.modelMapper.map(byId, AccountDetailsBindingModel.class));
     }
 
     @Override
@@ -57,20 +68,23 @@ public class AccountServiceImpl implements AccountService {
         return accounts;
     }
 
+    @Transactional
     @Override
-    public boolean deleteAccount(String accountUUID) {
+    public boolean deleteAccount(String accountUUID, String username) {
+        int b;
         try {
-            this.accountRepository.deleteById(accountUUID);
+            b = this.accountRepository.deleteAccountByUUIDAndUser_Username(accountUUID, username);
+            System.out.println();
         } catch (Exception e) {
             log.error("Failed to delete account with id: " + accountUUID);
             log.error(e.getMessage());
             return false;
         }
-        return true;
+        return b != 0;
     }
 
     @Override
-    public AccountAddBindingModel updateAccount(String accountUUID, AccountAddServiceModel accountAddServiceModel) {
+    public Optional<AccountAddBindingModel> updateAccount(String accountUUID, AccountAddServiceModel accountAddServiceModel) {
         // FIXME: Fix error handling
         Account account = this.accountRepository.findById(accountUUID).orElseThrow(UnsupportedOperationException::new);
         if (!account.getName().equals(accountAddServiceModel.getName())) {
@@ -86,19 +100,18 @@ public class AccountServiceImpl implements AccountService {
         }
 
         Account updatedAccount = this.accountRepository.save(account);
-        return this.modelMapper.map(updatedAccount, AccountAddBindingModel.class);
+        return Optional.ofNullable(this.modelMapper.map(updatedAccount, AccountAddBindingModel.class));
     }
 
     @Override
     public Account getAccountByUUID(String accountUUID) {
-        // FIXME: Fix error handling
+        // FIXME: Fix when user is not present
         return this.accountRepository.findById(accountUUID).orElseThrow(UnsupportedOperationException::new);
     }
 
     @Override
     public boolean isUserOwner(String username, String accountUUID) {
-        User user = this.userService.getUserByUsername(username);
-        Account account = this.accountRepository.getAccountByUUIDAndUser_UUID(accountUUID, user.getUUID());
-        return account != null;
+        Optional<AccountDetailsBindingModel> account = getAccountBindingModelByUUID(accountUUID, username);
+        return account.isPresent();
     }
 }

@@ -12,6 +12,7 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 @AllArgsConstructor
 public class AccountAddBindingModel {
+    private String UUID;
     private String name;
     private BigDecimal balance;
     private String currency;

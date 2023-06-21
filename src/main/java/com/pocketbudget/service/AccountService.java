@@ -6,15 +6,18 @@ import com.pocketbudget.model.entity.Account;
 import com.pocketbudget.model.service.AccountAddServiceModel;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface AccountService {
-    AccountAddBindingModel createAccount(AccountAddServiceModel accountAddBindingModel);
+    Optional<AccountAddBindingModel> createAccount(AccountAddServiceModel accountAddBindingModel);
+
+    Optional<AccountDetailsBindingModel> getAccountBindingModelByUUID(String uuid, String username);
 
     List<AccountDetailsBindingModel> getAllAccounts(String username);
 
-    boolean deleteAccount(String accountUUID);
+    boolean deleteAccount(String accountUUID, String username);
 
-    AccountAddBindingModel updateAccount(String accountUUID, AccountAddServiceModel accountAddServiceModel);
+    Optional<AccountAddBindingModel> updateAccount(String accountUUID, AccountAddServiceModel accountAddServiceModel);
 
     Account getAccountByUUID(String accountUUID);
 

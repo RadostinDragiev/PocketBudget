@@ -10,8 +10,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/accounts")
@@ -28,25 +30,44 @@ public class AccountController {
     @GetMapping("/getAccounts")
     public ResponseEntity<List<AccountDetailsBindingModel>> getAllAccounts(@AuthenticationPrincipal UserDetails userDetails) {
         List<AccountDetailsBindingModel> allAccounts = this.accountService.getAllAccounts(userDetails.getUsername());
-        return ResponseEntity.ok(allAccounts);
+        return !allAccounts.isEmpty() ? ResponseEntity.ok(allAccounts) : ResponseEntity.notFound().build();
+    }
+
+    @GetMapping("/getAccount/{id}")
+    public ResponseEntity<AccountDetailsBindingModel> getAccountById(@AuthenticationPrincipal UserDetails userDetails,
+                                                                     @PathVariable("id") String accountUUID) {
+        Optional<AccountDetailsBindingModel> accountOpt = this.accountService.getAccountBindingModelByUUID(accountUUID, userDetails.getUsername());
+        return accountOpt.map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     @PostMapping("/createAccount")
     public ResponseEntity<AccountAddBindingModel> createAccount(@AuthenticationPrincipal UserDetails userDetails,
-                                                                @RequestBody AccountAddBindingModel accountAddBindingModel) {
+                                                                @RequestBody AccountAddBindingModel accountAddBindingModel,
+                                                                UriComponentsBuilder uriComponentsBuilder) {
         AccountAddServiceModel accountAddServiceModel = this.modelMapper.map(accountAddBindingModel, AccountAddServiceModel.class);
         accountAddServiceModel.setUsername(userDetails.getUsername());
-
-        return ResponseEntity.ok(this.accountService.createAccount(accountAddServiceModel));
+        Optional<AccountAddBindingModel> accountOpt = this.accountService.createAccount(accountAddServiceModel);
+        return accountOpt.isEmpty() ? ResponseEntity
+                .created(uriComponentsBuilder
+                        .path("/accounts/{accountUUID}")
+                        .buildAndExpand(accountOpt.get().getUUID())
+                        .toUri())
+                .build() : ResponseEntity.unprocessableEntity().build();
     }
 
-    @PatchMapping("/{id}/updateAccount")
-    public ResponseEntity<AccountAddBindingModel> updateAccount(@PathVariable("id") String accountUUID, @RequestBody AccountAddBindingModel accountAddBindingModel) {
-        return ResponseEntity.ok(this.accountService.updateAccount(accountUUID, this.modelMapper.map(accountAddBindingModel, AccountAddServiceModel.class)));
+    @PatchMapping("/updateAccount/{id}")
+    public ResponseEntity<AccountAddBindingModel> updateAccount(@PathVariable("id") String accountUUID,
+                                                                @RequestBody AccountAddBindingModel accountAddBindingModel) {
+        AccountAddServiceModel accountAddServiceModel = this.modelMapper.map(accountAddBindingModel, AccountAddServiceModel.class);
+        Optional<AccountAddBindingModel> accountOpt = this.accountService.updateAccount(accountUUID, accountAddServiceModel);
+        return accountOpt.map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
-    @DeleteMapping("/{id}/deleteAccount")
-    public ResponseEntity<Void> deleteAccount(@PathVariable("id") String accountUUID) {
-        return this.accountService.deleteAccount(accountUUID) ? ResponseEntity.ok().build() : ResponseEntity.badRequest().build();
+    @DeleteMapping("/deleteAccount/{id}")
+    public ResponseEntity<Void> deleteAccount(@AuthenticationPrincipal UserDetails userDetails,
+                                              @PathVariable("id") String accountUUID) {
+        return this.accountService.deleteAccount(accountUUID, userDetails.getUsername()) ? ResponseEntity.ok().build() : ResponseEntity.badRequest().build();
     }
 }

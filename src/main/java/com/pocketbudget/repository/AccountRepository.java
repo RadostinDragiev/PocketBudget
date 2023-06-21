@@ -5,10 +5,13 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface AccountRepository extends JpaRepository<Account, String> {
     List<Account> getAllByUser_UUID(String UUID);
 
-    Account getAccountByUUIDAndUser_UUID(String accountUUID, String userUUID);
+    Optional<Account> getAccountByUUIDAndUser_UUID(String accountUUID, String userUUID);
+
+    int deleteAccountByUUIDAndUser_Username(String accountUUID, String username);
 }
