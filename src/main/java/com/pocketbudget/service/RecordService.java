@@ -5,9 +5,12 @@ import com.pocketbudget.model.binding.RecordDetailsBindingModel;
 import com.pocketbudget.model.service.RecordAddServiceModel;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface RecordService {
-    RecordAddBindingModel createRecord(String accountUUID, RecordAddServiceModel recordAddServiceModel);
+    Optional<RecordAddBindingModel> createRecord(String accountUUID, RecordAddServiceModel recordAddServiceModel);
 
-    List<RecordDetailsBindingModel> getAllRecordsByAccountUUID(String accountUUID);
+    Optional<RecordDetailsBindingModel> getRecordByUUID(String recordUUID, String accountUUID, String username);
+
+    List<RecordDetailsBindingModel> getAllRecordsByAccountUUID(String accountUUID, String username);
 }

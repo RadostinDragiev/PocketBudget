@@ -19,6 +19,7 @@ import javax.transaction.Transactional;
 import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -38,7 +39,7 @@ public class RecordServiceImpl implements RecordService {
 
     @Override
     @Transactional
-    public RecordAddBindingModel createRecord(String accountUUID, RecordAddServiceModel recordAddServiceModel) {
+    public Optional<RecordAddBindingModel> createRecord(String accountUUID, RecordAddServiceModel recordAddServiceModel) {
         Account account = this.accountService.getAccountByUUID(accountUUID);
         Record record = this.modelMapper.map(recordAddServiceModel, Record.class);
         record.setAccount(account);
@@ -79,12 +80,18 @@ public class RecordServiceImpl implements RecordService {
         this.accountService.updateAccount(accountUUID, accountAddServiceModel);
         Record savedRecord = this.recordRepository.saveAndFlush(record);
 
-        return this.modelMapper.map(savedRecord, RecordAddBindingModel.class);
+        return Optional.ofNullable(this.modelMapper.map(savedRecord, RecordAddBindingModel.class));
     }
 
     @Override
-    public List<RecordDetailsBindingModel> getAllRecordsByAccountUUID(String accountUUID) {
-        List<Record> allByAccountUuid = this.recordRepository.getAllByAccount_UUIDOrderByCreatedDateTimeDesc(accountUUID);
+    public Optional<RecordDetailsBindingModel> getRecordByUUID(String recordUUID, String accountUUID, String username) {
+        Optional<Record> record = this.recordRepository.getRecordByUUIDAndAccount_UUIDAndAccount_User_Username(recordUUID, accountUUID, username);
+        return Optional.ofNullable(this.modelMapper.map(record, RecordDetailsBindingModel.class));
+    }
+
+    @Override
+    public List<RecordDetailsBindingModel> getAllRecordsByAccountUUID(String accountUUID, String username) {
+        List<Record> allByAccountUuid = this.recordRepository.getAllByAccount_UUIDAndAccount_User_UsernameOrderByCreatedDateTimeDesc(accountUUID, username);
         return Arrays.stream(this.modelMapper.map(allByAccountUuid, RecordDetailsBindingModel[].class)).collect(Collectors.toList());
     }
 }
