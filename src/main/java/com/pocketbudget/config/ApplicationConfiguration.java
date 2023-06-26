@@ -1,7 +1,9 @@
 package com.pocketbudget.config;
 
 import com.pocketbudget.util.DateTimeApplier;
+import com.pocketbudget.util.EmailManager;
 import com.pocketbudget.util.impl.DateTimeApplierImpl;
+import com.pocketbudget.util.impl.EmailManagerImpl;
 import org.modelmapper.ModelMapper;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -23,5 +25,10 @@ public class ApplicationConfiguration {
     @Bean
     public DateTimeApplier dateTimeApplier() {
         return new DateTimeApplierImpl();
+    }
+
+    @Bean
+    public EmailManager emailManager() {
+        return new EmailManagerImpl();
     }
 }
