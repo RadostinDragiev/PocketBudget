@@ -62,6 +62,7 @@ public class EmailManagerImpl implements EmailManager {
             String htmlContent = "";
             try (FileInputStream fis = new FileInputStream(body)) {
                 htmlContent = new String(fis.readAllBytes(), StandardCharsets.UTF_8);
+                htmlContent = htmlContent.replaceAll("%email%", toEmail);
             } catch (FileNotFoundException e) {
                 log.error(e.getMessage());
                 e.printStackTrace();
