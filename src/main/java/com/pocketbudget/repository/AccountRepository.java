@@ -11,7 +11,7 @@ import java.util.Optional;
 public interface AccountRepository extends JpaRepository<Account, String> {
     List<Account> getAllByUser_UUID(String UUID);
 
-    Optional<Account> getAccountByUUIDAndUser_UUID(String accountUUID, String userUUID);
+    Optional<Account> getAccountByUUIDAndUser_Username(String accountUUID, String userUUID);
 
     int deleteAccountByUUIDAndUser_Username(String accountUUID, String username);
 }

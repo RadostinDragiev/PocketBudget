@@ -50,8 +50,7 @@ public class AccountServiceImpl implements AccountService {
 
     @Override
     public Optional<AccountDetailsBindingModel> getAccountBindingModelByUUID(String uuid, String username) {
-        User userByUsername = this.userService.getUserByUsername(username);
-        Optional<Account> byId = this.accountRepository.getAccountByUUIDAndUser_UUID(uuid, userByUsername.getUUID());
+        Optional<Account> byId = this.accountRepository.getAccountByUUIDAndUser_Username(uuid, username);
         return Optional.ofNullable(this.modelMapper.map(byId, AccountDetailsBindingModel.class));
     }
 
@@ -71,16 +70,15 @@ public class AccountServiceImpl implements AccountService {
     @Transactional
     @Override
     public boolean deleteAccount(String accountUUID, String username) {
-        int b;
+        int deleteResult;
         try {
-            b = this.accountRepository.deleteAccountByUUIDAndUser_Username(accountUUID, username);
-            System.out.println();
+            deleteResult = this.accountRepository.deleteAccountByUUIDAndUser_Username(accountUUID, username);
         } catch (Exception e) {
             log.error("Failed to delete account with id: " + accountUUID);
             log.error(e.getMessage());
             return false;
         }
-        return b != 0;
+        return deleteResult != 0;
     }
 
     @Override

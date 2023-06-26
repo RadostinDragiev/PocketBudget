@@ -10,10 +10,12 @@ import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.Properties;
+
+import static com.pocketbudget.constant.EmailConstants.*;
 
 @Slf4j
 @Component
@@ -26,13 +28,7 @@ public class EmailManagerImpl implements EmailManager {
 
     public void sendSSLEmail(String toEmail, String subject, File body) {
         log.info("SSLEmail Start");
-        Properties props = new Properties();
-        props.put("mail.smtp.host", "smtp.gmail.com"); //SMTP Host
-        props.put("mail.smtp.socketFactory.port", "465"); //SSL Port
-        props.put("mail.smtp.socketFactory.class",
-                "javax.net.ssl.SSLSocketFactory"); //SSL Factory Class
-        props.put("mail.smtp.auth", "true"); //Enabling SMTP Authentication
-        props.put("mail.smtp.port", "465"); //SMTP Port
+        Properties properties = loadProperties();
 
         Authenticator auth = new Authenticator() {
             //override the getPasswordAuthentication method
@@ -41,44 +37,76 @@ public class EmailManagerImpl implements EmailManager {
             }
         };
 
-        Session session = Session.getDefaultInstance(props, auth);
+        Session session = Session.getDefaultInstance(properties, auth);
         log.info("Session created");
         sendEmail(session, toEmail, subject, body);
     }
 
     public void sendEmail(Session session, String toEmail, String subject, File body) {
         try {
-            MimeMessage msg = new MimeMessage(session);
-            msg.addHeader("Content-type", "text/HTML; charset=UTF-8");
-            msg.addHeader("format", "flowed");
-            msg.addHeader("Content-Transfer-Encoding", "8bit");
+            MimeMessage message = new MimeMessage(session);
+            addHeaders(message);
 
-            msg.setFrom(new InternetAddress(email, "NoReply-PocketBudget"));
+            message.setFrom(new InternetAddress(email, EMAIL_SENDER_NAME));
 
-            msg.setReplyTo(InternetAddress.parse(email, false));
+            message.setReplyTo(InternetAddress.parse(email, false));
 
-            msg.setSubject(subject, "UTF-8");
+            message.setSubject(subject, StandardCharsets.UTF_8.toString());
 
-            String htmlContent = "";
-            try (FileInputStream fis = new FileInputStream(body)) {
-                htmlContent = new String(fis.readAllBytes(), StandardCharsets.UTF_8);
-                htmlContent = htmlContent.replaceAll("%email%", toEmail);
-            } catch (FileNotFoundException e) {
-                log.error(e.getMessage());
-                e.printStackTrace();
-            }
-            msg.setContent(htmlContent, "text/html");
+            message.setContent(buildBody(body, toEmail), CONTENT_TYPE_HTML);
 
-            msg.setSentDate(new Date());
+            message.setSentDate(new Date());
 
-            msg.setRecipients(Message.RecipientType.TO, InternetAddress.parse(toEmail, false));
+            message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(toEmail, false));
             log.info("Message is ready");
-            Transport.send(msg);
+            Transport.send(message);
 
             log.info("Email Sent Successfully!!");
         } catch (Exception e) {
             log.error(e.getMessage());
             e.printStackTrace();
         }
+    }
+
+    private Properties loadProperties() {
+        Properties properties = new Properties();
+        properties.put(SMTP_HOST, SMTP_HOST_VALUE);
+        properties.put(SSL_PORT, SSL_PORT_VALUE);
+        properties.put(SSL_FACTORY_CLASS, SSL_FACTORY_CLASS_VALUE);
+        properties.put(SMTP_AUTHENTICATION, SMTP_AUTHENTICATION_VALUE);
+        properties.put(SMTP_PORT, SMTP_PORT_VALUE);
+        return properties;
+    }
+
+    /**
+     * Add headers to message
+     *
+     * @param message - message expecting headers
+     * @throws MessagingException - exception is handled by sendEmail method
+     */
+    private void addHeaders(MimeMessage message) throws MessagingException {
+        message.addHeader(CONTENT_TYPE, CONTENT_TYPE_VALUE);
+        message.addHeader(FORMAT, FORMAT_VALUE);
+        message.addHeader(CONTENT_TRANSFER_ENCODING, CONTENT_TRANSFER_ENCODING_VALUE);
+    }
+
+    /**
+     * Construct body of the email
+     *
+     * @param body    - HTML page added to the message
+     * @param toEmail - to be replaced on placeholder
+     * @return - ready for email String
+     */
+    private String buildBody(File body, String toEmail) {
+        String htmlContent = "";
+        try (FileInputStream fis = new FileInputStream(body)) {
+            htmlContent = new String(fis.readAllBytes(), StandardCharsets.UTF_8);
+            htmlContent = htmlContent.replaceAll("%email%", toEmail);
+        } catch (IOException e) {
+            log.error(e.getMessage());
+            e.printStackTrace();
+        }
+
+        return htmlContent;
     }
 }
