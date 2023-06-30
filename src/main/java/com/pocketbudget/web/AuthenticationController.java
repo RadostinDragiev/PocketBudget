@@ -10,6 +10,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
+
 @RestController
 @RequestMapping("/auth")
 public class AuthenticationController {
@@ -27,7 +29,7 @@ public class AuthenticationController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<RegisterUserBindingModel> registerUser(@RequestBody RegisterUserBindingModel registerUserBindingModel) {
+    public ResponseEntity<RegisterUserBindingModel> registerUser(@Valid @RequestBody RegisterUserBindingModel registerUserBindingModel) {
         registerUserBindingModel.setPassword(this.passwordEncoder.encode(registerUserBindingModel.getPassword()));
         RegisterUserBindingModel registerUser = this.userService.registerUser(this.modelMapper.map(registerUserBindingModel, RegisterUserServiceModel.class));
         this.userRegisterEventPublisher.publishUserRegisteredEvent(registerUser.getEmail());

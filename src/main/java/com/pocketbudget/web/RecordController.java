@@ -14,6 +14,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import javax.validation.Valid;
 import java.util.List;
 import java.util.Optional;
 
@@ -52,7 +53,7 @@ public class RecordController {
     @PostMapping("/{accountId}/createRecord")
     public ResponseEntity<RecordAddBindingModel> createRecord(@AuthenticationPrincipal UserDetails userDetails,
                                                               @PathVariable("accountId") String accountUUID,
-                                                              @RequestBody RecordAddBindingModel recordAddBindingModel,
+                                                              @Valid @RequestBody RecordAddBindingModel recordAddBindingModel,
                                                               UriComponentsBuilder uriComponentsBuilder) {
         if (!this.accountService.isUserOwner(userDetails.getUsername(), accountUUID)) {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);

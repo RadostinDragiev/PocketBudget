@@ -12,6 +12,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import javax.validation.Valid;
 import java.util.List;
 import java.util.Optional;
 
@@ -43,7 +44,7 @@ public class AccountController {
 
     @PostMapping("/createAccount")
     public ResponseEntity<AccountAddBindingModel> createAccount(@AuthenticationPrincipal UserDetails userDetails,
-                                                                @RequestBody AccountAddBindingModel accountAddBindingModel,
+                                                                @Valid @RequestBody AccountAddBindingModel accountAddBindingModel,
                                                                 UriComponentsBuilder uriComponentsBuilder) {
         AccountAddServiceModel accountAddServiceModel = this.modelMapper.map(accountAddBindingModel, AccountAddServiceModel.class);
         accountAddServiceModel.setUsername(userDetails.getUsername());
@@ -58,7 +59,7 @@ public class AccountController {
 
     @PatchMapping("/updateAccount/{id}")
     public ResponseEntity<AccountAddBindingModel> updateAccount(@PathVariable("id") String accountUUID,
-                                                                @RequestBody AccountAddBindingModel accountAddBindingModel) {
+                                                                @Valid @RequestBody AccountAddBindingModel accountAddBindingModel) {
         AccountAddServiceModel accountAddServiceModel = this.modelMapper.map(accountAddBindingModel, AccountAddServiceModel.class);
         Optional<AccountAddBindingModel> accountOpt = this.accountService.updateAccount(accountUUID, accountAddServiceModel);
         return accountOpt.map(ResponseEntity::ok)
