@@ -2,7 +2,9 @@ package com.pocketbudget.service.impl;
 
 import com.pocketbudget.model.binding.AccountAddBindingModel;
 import com.pocketbudget.model.binding.AccountDetailsBindingModel;
+import com.pocketbudget.model.binding.AccountDetailsWithRecordsBindingModel;
 import com.pocketbudget.model.entity.Account;
+import com.pocketbudget.model.entity.Record;
 import com.pocketbudget.model.entity.User;
 import com.pocketbudget.model.service.AccountAddServiceModel;
 import com.pocketbudget.repository.AccountRepository;
@@ -20,6 +22,7 @@ import java.util.Currency;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Slf4j
 @Service
@@ -53,8 +56,16 @@ public class AccountServiceImpl implements AccountService {
 
     @Override
     public AccountDetailsBindingModel getAccountBindingModelByUUID(String uuid, String username) {
-        Account byId = this.accountRepository.getAccountByUUIDAndUser_Username(uuid, username).orElseThrow(EntityNotFoundException::new);
-        return this.modelMapper.map(byId, AccountDetailsBindingModel.class);
+        Account account = this.accountRepository.getAccountByUUIDAndUser_Username(uuid, username).orElseThrow(EntityNotFoundException::new);
+        return this.modelMapper.map(account, AccountDetailsBindingModel.class);
+    }
+
+    @Override
+    public AccountDetailsWithRecordsBindingModel getAccountBindingModelWithRecordByUUID(String uuid, String username) {
+        Account account = this.accountRepository.getAccountWithRecordsByUUIDAndUser_Username(uuid, username).orElseThrow(EntityNotFoundException::new);
+        Stream<Record> sorted = account.getRecords().stream().sorted((f, s) -> s.getCreatedDateTime().compareTo(f.getCreatedDateTime()));
+        account.setRecords(sorted.collect(Collectors.toList()));
+        return this.modelMapper.map(account, AccountDetailsWithRecordsBindingModel.class);
     }
 
     @Override

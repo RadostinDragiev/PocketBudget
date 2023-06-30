@@ -2,6 +2,7 @@ package com.pocketbudget.web;
 
 import com.pocketbudget.model.binding.AccountAddBindingModel;
 import com.pocketbudget.model.binding.AccountDetailsBindingModel;
+import com.pocketbudget.model.binding.AccountDetailsWithRecordsBindingModel;
 import com.pocketbudget.model.service.AccountAddServiceModel;
 import com.pocketbudget.service.AccountService;
 import org.modelmapper.ModelMapper;
@@ -34,9 +35,9 @@ public class AccountController {
     }
 
     @GetMapping("/getAccount/{id}")
-    public ResponseEntity<AccountDetailsBindingModel> getAccountById(@AuthenticationPrincipal UserDetails userDetails,
+    public ResponseEntity<AccountDetailsWithRecordsBindingModel> getAccountById(@AuthenticationPrincipal UserDetails userDetails,
                                                                      @PathVariable("id") String accountUUID) {
-        AccountDetailsBindingModel account = this.accountService.getAccountBindingModelByUUID(accountUUID, userDetails.getUsername());
+        AccountDetailsWithRecordsBindingModel account = this.accountService.getAccountBindingModelWithRecordByUUID(accountUUID, userDetails.getUsername());
         return ResponseEntity.ok(account);
     }
 

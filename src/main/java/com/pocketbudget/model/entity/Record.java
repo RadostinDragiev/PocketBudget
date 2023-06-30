@@ -27,7 +27,7 @@ public class Record extends BaseEntity {
     private Category category;
 
     @Column(name = "notes", columnDefinition = "TEXT")
-    private String note;
+    private String notes;
 
     @ManyToOne(targetEntity = Account.class)
     private Account account;

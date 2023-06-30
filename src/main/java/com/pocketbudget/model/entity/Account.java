@@ -28,6 +28,6 @@ public class Account extends BaseEntity {
     @ManyToOne(targetEntity = User.class)
     private User user;
 
-    @OneToMany(mappedBy = "account", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "account", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Record> records;
 }

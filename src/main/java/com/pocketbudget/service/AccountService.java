@@ -2,6 +2,7 @@ package com.pocketbudget.service;
 
 import com.pocketbudget.model.binding.AccountAddBindingModel;
 import com.pocketbudget.model.binding.AccountDetailsBindingModel;
+import com.pocketbudget.model.binding.AccountDetailsWithRecordsBindingModel;
 import com.pocketbudget.model.entity.Account;
 import com.pocketbudget.model.service.AccountAddServiceModel;
 
@@ -11,6 +12,8 @@ public interface AccountService {
     AccountAddBindingModel createAccount(AccountAddServiceModel accountAddBindingModel);
 
     AccountDetailsBindingModel getAccountBindingModelByUUID(String uuid, String username);
+
+    AccountDetailsWithRecordsBindingModel getAccountBindingModelWithRecordByUUID(String uuid, String username);
 
     List<AccountDetailsBindingModel> getAllAccounts(String username);
 
