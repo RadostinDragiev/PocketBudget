@@ -14,6 +14,7 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.persistence.EntityNotFoundException;
 import javax.transaction.Transactional;
 import java.util.Currency;
 import java.util.List;
@@ -37,21 +38,23 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
-    public Optional<AccountAddBindingModel> createAccount(AccountAddServiceModel accountAddServiceModel) {
+    public AccountAddBindingModel createAccount(AccountAddServiceModel accountAddServiceModel) {
         User user = this.userService.getUserByUsername(accountAddServiceModel.getUsername());
         Account account = this.modelMapper.map(accountAddServiceModel, Account.class);
         account.setUser(user);
         this.dateTimeApplier.applyDateTIme(account);
 
-        Optional<Account> createdAccount = Optional.of(this.accountRepository.saveAndFlush(account));
+        Account createdAccount = this.accountRepository.saveAndFlush(account);
 
-        return Optional.ofNullable(this.modelMapper.map(createdAccount, AccountAddBindingModel.class));
+        return Optional
+                .ofNullable(this.modelMapper.map(createdAccount, AccountAddBindingModel.class))
+                .orElseThrow(EntityNotFoundException::new);
     }
 
     @Override
-    public Optional<AccountDetailsBindingModel> getAccountBindingModelByUUID(String uuid, String username) {
-        Optional<Account> byId = this.accountRepository.getAccountByUUIDAndUser_Username(uuid, username);
-        return Optional.ofNullable(this.modelMapper.map(byId, AccountDetailsBindingModel.class));
+    public AccountDetailsBindingModel getAccountBindingModelByUUID(String uuid, String username) {
+        Account byId = this.accountRepository.getAccountByUUIDAndUser_Username(uuid, username).orElseThrow(EntityNotFoundException::new);
+        return this.modelMapper.map(byId, AccountDetailsBindingModel.class);
     }
 
     @Override
@@ -82,9 +85,8 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
-    public Optional<AccountAddBindingModel> updateAccount(String accountUUID, AccountAddServiceModel accountAddServiceModel) {
-        // FIXME: Fix error handling
-        Account account = this.accountRepository.findById(accountUUID).orElseThrow(UnsupportedOperationException::new);
+    public AccountAddBindingModel updateAccount(String accountUUID, AccountAddServiceModel accountAddServiceModel) {
+        Account account = this.accountRepository.findById(accountUUID).orElseThrow(EntityNotFoundException::new);
         if (!account.getName().equals(accountAddServiceModel.getName())) {
             account.setName(accountAddServiceModel.getName());
         }
@@ -98,18 +100,17 @@ public class AccountServiceImpl implements AccountService {
         }
 
         Account updatedAccount = this.accountRepository.save(account);
-        return Optional.ofNullable(this.modelMapper.map(updatedAccount, AccountAddBindingModel.class));
+        return this.modelMapper.map(updatedAccount, AccountAddBindingModel.class);
     }
 
     @Override
     public Account getAccountByUUID(String accountUUID) {
-        // FIXME: Fix when user is not present
-        return this.accountRepository.findById(accountUUID).orElseThrow(UnsupportedOperationException::new);
+        return this.accountRepository.findById(accountUUID).orElseThrow(EntityNotFoundException::new);
     }
 
     @Override
     public boolean isUserOwner(String username, String accountUUID) {
-        Optional<AccountDetailsBindingModel> account = getAccountBindingModelByUUID(accountUUID, username);
-        return account.isPresent();
+        AccountDetailsBindingModel account = getAccountBindingModelByUUID(accountUUID, username);
+        return account != null;
     }
 }

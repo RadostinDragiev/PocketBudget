@@ -14,7 +14,6 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import javax.validation.Valid;
 import java.util.List;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/accounts")
@@ -37,9 +36,8 @@ public class AccountController {
     @GetMapping("/getAccount/{id}")
     public ResponseEntity<AccountDetailsBindingModel> getAccountById(@AuthenticationPrincipal UserDetails userDetails,
                                                                      @PathVariable("id") String accountUUID) {
-        Optional<AccountDetailsBindingModel> accountOpt = this.accountService.getAccountBindingModelByUUID(accountUUID, userDetails.getUsername());
-        return accountOpt.map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.notFound().build());
+        AccountDetailsBindingModel account = this.accountService.getAccountBindingModelByUUID(accountUUID, userDetails.getUsername());
+        return ResponseEntity.ok(account);
     }
 
     @PostMapping("/createAccount")
@@ -48,22 +46,21 @@ public class AccountController {
                                                                 UriComponentsBuilder uriComponentsBuilder) {
         AccountAddServiceModel accountAddServiceModel = this.modelMapper.map(accountAddBindingModel, AccountAddServiceModel.class);
         accountAddServiceModel.setUsername(userDetails.getUsername());
-        Optional<AccountAddBindingModel> accountOpt = this.accountService.createAccount(accountAddServiceModel);
-        return accountOpt.<ResponseEntity<AccountAddBindingModel>>map(addBindingModel -> ResponseEntity
+        AccountAddBindingModel account = this.accountService.createAccount(accountAddServiceModel);
+        return ResponseEntity
                 .created(uriComponentsBuilder
                         .path("/accounts/getAccount/{accountUUID}")
-                        .buildAndExpand(addBindingModel.getUUID())
+                        .buildAndExpand(account.getUUID())
                         .toUri())
-                .build()).orElseGet(() -> ResponseEntity.unprocessableEntity().build());
+                .build();
     }
 
     @PatchMapping("/updateAccount/{id}")
     public ResponseEntity<AccountAddBindingModel> updateAccount(@PathVariable("id") String accountUUID,
                                                                 @Valid @RequestBody AccountAddBindingModel accountAddBindingModel) {
         AccountAddServiceModel accountAddServiceModel = this.modelMapper.map(accountAddBindingModel, AccountAddServiceModel.class);
-        Optional<AccountAddBindingModel> accountOpt = this.accountService.updateAccount(accountUUID, accountAddServiceModel);
-        return accountOpt.map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.notFound().build());
+        AccountAddBindingModel account = this.accountService.updateAccount(accountUUID, accountAddServiceModel);
+        return ResponseEntity.ok(account);
     }
 
     @DeleteMapping("/deleteAccount/{id}")

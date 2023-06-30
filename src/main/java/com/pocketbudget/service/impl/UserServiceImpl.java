@@ -13,6 +13,7 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.persistence.EntityNotFoundException;
 import javax.transaction.Transactional;
 import java.time.LocalDateTime;
 import java.util.Set;
@@ -49,8 +50,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public Set<UserRole> getUserRoles(String UUID) {
-        // TODO: Fix exception handling
-        User byId = this.userRepository.findById(UUID).orElseThrow(UnsupportedOperationException::new);
+        User byId = this.userRepository.findById(UUID).orElseThrow(EntityNotFoundException::new);
         return byId.getRoles();
     }
 
@@ -58,17 +58,9 @@ public class UserServiceImpl implements UserService {
     @Transactional
     public boolean updateUserRoles(String UUID, Set<UserRoleEnum> userRoles) {
         Set<UserRole> userNewRoles = this.userRoleService.getRolesFromCollection(userRoles);
-
-        // TODO: Fix exception handling
-        try {
-            User user = this.userRepository.findById(UUID).orElseThrow(UnsupportedOperationException::new);
-            user.setRoles(userNewRoles);
-            this.userRepository.saveAndFlush(user);
-        } catch (Exception e) {
-            log.error("Failed to update user roles: " + e.getMessage());
-            return false;
-        }
-
+        User user = this.userRepository.findById(UUID).orElseThrow(EntityNotFoundException::new);
+        user.setRoles(userNewRoles);
+        this.userRepository.saveAndFlush(user);
         return true;
     }
 

@@ -1,4 +1,4 @@
-package com.pocketbudget.error;
+package com.pocketbudget.exception;
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.databind.jsontype.impl.TypeIdResolverBase;

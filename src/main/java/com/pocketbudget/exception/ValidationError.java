@@ -1,4 +1,4 @@
-package com.pocketbudget.error;
+package com.pocketbudget.exception;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

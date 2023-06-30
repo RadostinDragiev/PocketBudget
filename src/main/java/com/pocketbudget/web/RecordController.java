@@ -16,7 +16,6 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import javax.validation.Valid;
 import java.util.List;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/records")
@@ -36,11 +35,9 @@ public class RecordController {
     public ResponseEntity<RecordDetailsBindingModel> getRecord(@AuthenticationPrincipal UserDetails userDetails,
                                                                @PathVariable("accountId") String accountUUID,
                                                                @PathVariable("recordId") String recordUUID) {
-        Optional<RecordDetailsBindingModel> record = this.recordService.getRecordByUUID(recordUUID, accountUUID, userDetails.getUsername());
+        RecordDetailsBindingModel record = this.recordService.getRecordByUUID(recordUUID, accountUUID, userDetails.getUsername());
 
-        return record
-                .map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.notFound().build());
+        return ResponseEntity.ok(record);
     }
 
     @GetMapping("/{accountId}/getAllRecords")
@@ -58,14 +55,13 @@ public class RecordController {
         if (!this.accountService.isUserOwner(userDetails.getUsername(), accountUUID)) {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
-        Optional<RecordAddBindingModel> recordOpt = this.recordService.createRecord(accountUUID, this.modelMapper.map(recordAddBindingModel, RecordAddServiceModel.class));
+        RecordAddBindingModel record = this.recordService.createRecord(accountUUID, this.modelMapper.map(recordAddBindingModel, RecordAddServiceModel.class));
 
-        return recordOpt.<ResponseEntity<RecordAddBindingModel>>map(addBindingModel -> ResponseEntity
-                .created(uriComponentsBuilder.path("/records/{accountId}/getRecord/{recordId}")
-                        .buildAndExpand(accountUUID, addBindingModel.getUUID())
+        return ResponseEntity
+                .created(uriComponentsBuilder
+                        .path("/records/{accountId}/getRecord/{recordId}")
+                        .buildAndExpand(accountUUID, record.getUUID())
                         .toUri())
-                .build())
-                .orElseGet(() -> ResponseEntity.unprocessableEntity().build());
-
+                .build();
     }
 }
