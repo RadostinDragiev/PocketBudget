@@ -1,6 +1,7 @@
 package com.pocketbudget.service.impl;
 
 import com.pocketbudget.exception.WithdrawCreationException;
+import com.pocketbudget.model.binding.AccountAddBindingModel;
 import com.pocketbudget.model.binding.RecordAddBindingModel;
 import com.pocketbudget.model.binding.RecordDetailsBindingModel;
 import com.pocketbudget.model.entity.Account;
@@ -83,6 +84,21 @@ public class RecordServiceImpl implements RecordService {
     public List<RecordDetailsBindingModel> getAllRecordsByAccountUUID(String accountUUID, String username) {
         List<Record> allByAccountUuid = this.recordRepository.getAllByAccount_UUIDAndAccount_User_UsernameOrderByCreatedDateTimeDesc(accountUUID, username);
         return Arrays.stream(this.modelMapper.map(allByAccountUuid, RecordDetailsBindingModel[].class)).collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional
+    public boolean deleteRecord(String accountUUID, String recordUUID, String username) {
+        Record record = this.recordRepository.getRecordByUUIDAndAccount_UUIDAndAccount_User_Username(recordUUID, accountUUID, username)
+                .orElseThrow(EntityNotFoundException::new);
+        int deleteResult = this.recordRepository.deleteRecordByUUIDAndAccount_UUID(recordUUID, accountUUID);
+        if (deleteResult != 0) {
+            Account account = this.accountService.getAccountByUUID(accountUUID);
+            account.setBalance(account.getBalance().add(record.getAmount()));
+            AccountAddBindingModel updateAccount = this.accountService.updateAccount(accountUUID, this.modelMapper.map(account, AccountAddServiceModel.class));
+            return updateAccount != null;
+        }
+        return false;
     }
 
     /**

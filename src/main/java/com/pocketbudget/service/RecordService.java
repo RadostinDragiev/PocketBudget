@@ -12,4 +12,6 @@ public interface RecordService {
     RecordDetailsBindingModel getRecordByUUID(String recordUUID, String accountUUID, String username);
 
     List<RecordDetailsBindingModel> getAllRecordsByAccountUUID(String accountUUID, String username);
+
+    boolean deleteRecord(String accountUUID, String recordUUID, String username);
 }

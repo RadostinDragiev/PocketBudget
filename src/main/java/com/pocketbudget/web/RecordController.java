@@ -64,4 +64,11 @@ public class RecordController {
                         .toUri())
                 .build();
     }
+
+    @DeleteMapping("/{accountId}/deleteRecord/{recordId}")
+    private ResponseEntity<Void> deleteRecord(@AuthenticationPrincipal UserDetails userDetails,
+                                              @PathVariable("accountId") String accountUUID,
+                                              @PathVariable("recordId") String recordUUID) {
+        return this.recordService.deleteRecord(accountUUID, recordUUID, userDetails.getUsername()) ? ResponseEntity.ok().build() : ResponseEntity.badRequest().build();
+    }
 }
