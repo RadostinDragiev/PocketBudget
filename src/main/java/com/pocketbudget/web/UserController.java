@@ -1,5 +1,6 @@
 package com.pocketbudget.web;
 
+import com.pocketbudget.common.annotation.TrackLatency;
 import com.pocketbudget.model.binding.UserRoleBindingModel;
 import com.pocketbudget.model.entity.UserRole;
 import com.pocketbudget.service.UserService;
@@ -21,12 +22,14 @@ public class UserController {
         this.userService = userService;
     }
 
+    @TrackLatency
     @GetMapping("/{id}/getUserRoles")
-    private ResponseEntity<Set<UserRole>> getUserRoles(@PathVariable("id") String userUUID) {
+    public ResponseEntity<Set<UserRole>> getUserRoles(@PathVariable("id") String userUUID) {
         Set<UserRole> userRoles = this.userService.getUserRoles(userUUID);
         return ResponseEntity.ok(userRoles);
     }
 
+    @TrackLatency
     @PatchMapping("/{id}/changeRoles")
     public ResponseEntity<Void> changeUserRoles(@PathVariable("id") String userUUID,
                                                 @RequestBody UserRoleBindingModel userRoleBindingModel) {

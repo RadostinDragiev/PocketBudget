@@ -1,5 +1,6 @@
 package com.pocketbudget.web;
 
+import com.pocketbudget.common.annotation.TrackLatency;
 import com.pocketbudget.event.UserRegisterEventPublisher;
 import com.pocketbudget.model.binding.RegisterUserBindingModel;
 import com.pocketbudget.model.service.RegisterUserServiceModel;
@@ -28,6 +29,7 @@ public class AuthenticationController {
         this.userRegisterEventPublisher = userRegisterEventPublisher;
     }
 
+    @TrackLatency
     @PostMapping("/register")
     public ResponseEntity<RegisterUserBindingModel> registerUser(@Valid @RequestBody RegisterUserBindingModel registerUserBindingModel) {
         registerUserBindingModel.setPassword(this.passwordEncoder.encode(registerUserBindingModel.getPassword()));

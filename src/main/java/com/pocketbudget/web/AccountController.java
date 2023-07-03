@@ -1,5 +1,6 @@
 package com.pocketbudget.web;
 
+import com.pocketbudget.common.annotation.TrackLatency;
 import com.pocketbudget.model.binding.AccountAddBindingModel;
 import com.pocketbudget.model.binding.AccountDetailsBindingModel;
 import com.pocketbudget.model.binding.AccountDetailsWithRecordsBindingModel;
@@ -28,12 +29,14 @@ public class AccountController {
         this.modelMapper = modelMapper;
     }
 
+    @TrackLatency
     @GetMapping("/getAccounts")
     public ResponseEntity<List<AccountDetailsBindingModel>> getAllAccounts(@AuthenticationPrincipal UserDetails userDetails) {
         List<AccountDetailsBindingModel> allAccounts = this.accountService.getAllAccounts(userDetails.getUsername());
         return !allAccounts.isEmpty() ? ResponseEntity.ok(allAccounts) : ResponseEntity.notFound().build();
     }
 
+    @TrackLatency
     @GetMapping("/getAccount/{id}")
     public ResponseEntity<AccountDetailsWithRecordsBindingModel> getAccountById(@AuthenticationPrincipal UserDetails userDetails,
                                                                      @PathVariable("id") String accountUUID) {
@@ -41,6 +44,7 @@ public class AccountController {
         return ResponseEntity.ok(account);
     }
 
+    @TrackLatency
     @PostMapping("/createAccount")
     public ResponseEntity<AccountAddBindingModel> createAccount(@AuthenticationPrincipal UserDetails userDetails,
                                                                 @Valid @RequestBody AccountAddBindingModel accountAddBindingModel,
@@ -56,6 +60,7 @@ public class AccountController {
                 .build();
     }
 
+    @TrackLatency
     @PatchMapping("/updateAccount/{id}")
     public ResponseEntity<AccountAddBindingModel> updateAccount(@PathVariable("id") String accountUUID,
                                                                 @Valid @RequestBody AccountAddBindingModel accountAddBindingModel) {
@@ -64,6 +69,7 @@ public class AccountController {
         return ResponseEntity.ok(account);
     }
 
+    @TrackLatency
     @DeleteMapping("/deleteAccount/{id}")
     public ResponseEntity<Void> deleteAccount(@AuthenticationPrincipal UserDetails userDetails,
                                               @PathVariable("id") String accountUUID) {

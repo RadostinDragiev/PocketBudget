@@ -25,11 +25,8 @@ public class SLOAspect {
         String className = signature.getDeclaringType().getSimpleName();
         String methodName = signature.getName();
 
-
         if (lastTaskTimeMillis > TrackLatency.latency()) {
-            log.error("----------------- Slow API! Method {} from class {} responded for {} ms, slower than expected! Please check and fix it!", methodName, className, lastTaskTimeMillis);
-        } else {
-            log.info("----- All good. {}", lastTaskTimeMillis);
+            log.error("Slow API! Method {} from class {} responded for {} ms, slower than expected! Please check and fix it!", methodName, className, lastTaskTimeMillis);
         }
 
         return proceed;

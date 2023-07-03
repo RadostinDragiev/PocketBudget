@@ -32,7 +32,7 @@ public class RecordController {
         this.modelMapper = modelMapper;
     }
 
-    @TrackLatency()
+    @TrackLatency
     @GetMapping("/{accountId}/getRecord/{recordId}")
     public ResponseEntity<RecordDetailsBindingModel> getRecord(@AuthenticationPrincipal UserDetails userDetails,
                                                                @PathVariable("accountId") String accountUUID,
@@ -42,7 +42,7 @@ public class RecordController {
         return ResponseEntity.ok(record);
     }
 
-    @TrackLatency()
+    @TrackLatency
     @GetMapping("/{accountId}/getAllRecords")
     public ResponseEntity<List<RecordDetailsBindingModel>> getAllRecords(@AuthenticationPrincipal UserDetails userDetails,
                                                                          @PathVariable("accountId") String accountUUID) {
@@ -50,7 +50,7 @@ public class RecordController {
         return !records.isEmpty() ? ResponseEntity.ok(records) : ResponseEntity.notFound().build();
     }
 
-    @TrackLatency()
+    @TrackLatency
     @PostMapping("/{accountId}/createRecord")
     public ResponseEntity<RecordAddBindingModel> createRecord(@AuthenticationPrincipal UserDetails userDetails,
                                                               @PathVariable("accountId") String accountUUID,
@@ -69,8 +69,9 @@ public class RecordController {
                 .build();
     }
 
+    @TrackLatency
     @DeleteMapping("/{accountId}/deleteRecord/{recordId}")
-    private ResponseEntity<Void> deleteRecord(@AuthenticationPrincipal UserDetails userDetails,
+    public ResponseEntity<Void> deleteRecord(@AuthenticationPrincipal UserDetails userDetails,
                                               @PathVariable("accountId") String accountUUID,
                                               @PathVariable("recordId") String recordUUID) {
         return this.recordService.deleteRecord(accountUUID, recordUUID, userDetails.getUsername()) ? ResponseEntity.ok().build() : ResponseEntity.badRequest().build();
