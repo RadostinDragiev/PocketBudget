@@ -1,5 +1,6 @@
 package com.pocketbudget.web;
 
+import com.pocketbudget.common.annotation.TrackLatency;
 import com.pocketbudget.model.binding.RecordAddBindingModel;
 import com.pocketbudget.model.binding.RecordDetailsBindingModel;
 import com.pocketbudget.model.service.RecordAddServiceModel;
@@ -31,6 +32,7 @@ public class RecordController {
         this.modelMapper = modelMapper;
     }
 
+    @TrackLatency()
     @GetMapping("/{accountId}/getRecord/{recordId}")
     public ResponseEntity<RecordDetailsBindingModel> getRecord(@AuthenticationPrincipal UserDetails userDetails,
                                                                @PathVariable("accountId") String accountUUID,
@@ -40,6 +42,7 @@ public class RecordController {
         return ResponseEntity.ok(record);
     }
 
+    @TrackLatency()
     @GetMapping("/{accountId}/getAllRecords")
     public ResponseEntity<List<RecordDetailsBindingModel>> getAllRecords(@AuthenticationPrincipal UserDetails userDetails,
                                                                          @PathVariable("accountId") String accountUUID) {
@@ -47,6 +50,7 @@ public class RecordController {
         return !records.isEmpty() ? ResponseEntity.ok(records) : ResponseEntity.notFound().build();
     }
 
+    @TrackLatency()
     @PostMapping("/{accountId}/createRecord")
     public ResponseEntity<RecordAddBindingModel> createRecord(@AuthenticationPrincipal UserDetails userDetails,
                                                               @PathVariable("accountId") String accountUUID,
