@@ -34,7 +34,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User getUserByUsername(String username) {
-        return this.userRepository.findByUsername(username).orElseThrow(UnsupportedOperationException::new);
+        return this.userRepository.findByUsername(username).orElseThrow(EntityNotFoundException::new);
     }
 
     @Override

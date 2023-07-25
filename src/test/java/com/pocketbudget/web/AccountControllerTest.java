@@ -1,6 +1,9 @@
 package com.pocketbudget.web;
 
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.pocketbudget.model.binding.AccountAddBindingModel;
 import com.pocketbudget.model.entity.Account;
 import com.pocketbudget.model.entity.User;
 import com.pocketbudget.repository.AccountRepository;
@@ -12,6 +15,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -28,6 +32,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc(addFilters = false)
 @SpringBootTest
 class AccountControllerTest {
+    public static final String GOSHO = "gosho";
+
     @Autowired
     private MockMvc mockMvc;
 
@@ -43,7 +49,7 @@ class AccountControllerTest {
     @BeforeEach
     public void setUp() {
         User user = new User();
-        user.setUsername("gosho");
+        user.setUsername(GOSHO);
         user.setPassword("parola");
         user.setEmail("email@email.com");
         user.setFirstName("Gosho");
@@ -51,8 +57,9 @@ class AccountControllerTest {
         LocalDateTime now = LocalDateTime.now();
         user.setCreatedDateTime(now);
         user.setLastLoginDateTime(now);
+        User savedUser = this.userRepository.save(user);
 
-        Account account = new Account("testAccount", new BigDecimal(1000), "BGN", this.userRepository.save(user), new ArrayList<>());
+        Account account = new Account("testAccount", new BigDecimal(1000), "BGN", savedUser, new ArrayList<>());
         this.dateTimeApplier.applyDateTIme(account);
         this.accountRepository.save(account);
     }
@@ -74,7 +81,47 @@ class AccountControllerTest {
     @WithMockUser(username = "pesho")
     @Test
     public void testGetAllAccountsNotFound() throws Exception {
+        User user = new User();
+        user.setUsername("pesho");
+        user.setPassword("parola");
+        user.setEmail("pesho@email.com");
+        user.setFirstName("Pesho");
+        user.setLastName("Goshov");
+        LocalDateTime now = LocalDateTime.now();
+        user.setCreatedDateTime(now);
+        user.setLastLoginDateTime(now);
+        this.userRepository.save(user);
+
         this.mockMvc.perform(get("/accounts/getAccounts"))
                 .andExpect(status().isNotFound());
+    }
+
+    @WithMockUser(username = "pesho")
+    @Test
+    public void getAccountById() throws Exception {
+        this.mockMvc.perform(get("/getAccount/{id}", is("123")))
+                .andExpect(status().isNotFound());
+    }
+
+    @WithMockUser(username = "gosho")
+    @Test
+    public void testCreateAccountOK() throws Exception {
+        AccountAddBindingModel accountAddBindingModel = new AccountAddBindingModel(null, "name", new BigDecimal(10000), "BGN");
+        this.mockMvc.perform(post("/accounts/createAccount").contentType(MediaType.APPLICATION_JSON)
+                        .content(json(accountAddBindingModel)))
+                .andExpect(status().isCreated());
+    }
+
+//    @Test
+    public void updateAccount() {
+    }
+
+//    @Test
+    public void deleteAccount() {
+    }
+
+    private static String json(Object obj) throws JsonProcessingException {
+        ObjectMapper objectMapper = new ObjectMapper();
+        return objectMapper.writeValueAsString(obj);
     }
 }
