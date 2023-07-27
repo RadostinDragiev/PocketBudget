@@ -94,7 +94,15 @@ public class RecordServiceImpl implements RecordService {
         int deleteResult = this.recordRepository.deleteRecordByUUIDAndAccount_UUID(recordUUID, accountUUID);
         if (deleteResult != 0) {
             Account account = this.accountService.getAccountByUUID(accountUUID);
-            account.setBalance(account.getBalance().add(record.getAmount()));
+            // TODO: Add Transfer option
+            switch (record.getAction()) {
+                case DEPOSIT:
+                    account.setBalance(account.getBalance().subtract(record.getAmount()));
+                    break;
+                case WITHDRAW:
+                    account.setBalance(account.getBalance().add(record.getAmount()));
+                    break;
+            }
             AccountAddBindingModel updateAccount = this.accountService.updateAccount(accountUUID, this.modelMapper.map(account, AccountAddServiceModel.class));
             return updateAccount != null;
         }
