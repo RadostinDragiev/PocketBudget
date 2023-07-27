@@ -4,16 +4,17 @@ import com.pocketbudget.model.binding.AccountAddBindingModel;
 import com.pocketbudget.model.binding.AccountDetailsBindingModel;
 import com.pocketbudget.model.binding.AccountDetailsWithRecordsBindingModel;
 import com.pocketbudget.model.entity.Account;
-import com.pocketbudget.model.entity.Record;
 import com.pocketbudget.model.entity.User;
 import com.pocketbudget.model.service.AccountAddServiceModel;
 import com.pocketbudget.repository.AccountRepository;
 import com.pocketbudget.service.AccountService;
+import com.pocketbudget.service.RecordService;
 import com.pocketbudget.service.UserService;
 import com.pocketbudget.util.DateTimeApplier;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityNotFoundException;
@@ -22,20 +23,21 @@ import java.util.Currency;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @Slf4j
 @Service
 public class AccountServiceImpl implements AccountService {
     private final AccountRepository accountRepository;
     private final UserService userService;
+    private final RecordService recordService;
     private final ModelMapper modelMapper;
     private final DateTimeApplier dateTimeApplier;
 
     @Autowired
-    public AccountServiceImpl(AccountRepository accountRepository, UserService userService, ModelMapper modelMapper, DateTimeApplier dateTimeApplier) {
+    public AccountServiceImpl(AccountRepository accountRepository, UserService userService, @Lazy RecordService recordService, ModelMapper modelMapper, DateTimeApplier dateTimeApplier) {
         this.accountRepository = accountRepository;
         this.userService = userService;
+        this.recordService = recordService;
         this.modelMapper = modelMapper;
         this.dateTimeApplier = dateTimeApplier;
     }
@@ -60,12 +62,17 @@ public class AccountServiceImpl implements AccountService {
         return this.modelMapper.map(account, AccountDetailsBindingModel.class);
     }
 
+
+    // Get all accounts by:
+    // action;
+    // amount in range;
+    // category;
+    // date created;
     @Override
-    public AccountDetailsWithRecordsBindingModel getAccountBindingModelWithRecordByUUID(String uuid, String username) {
-        Account account = this.accountRepository.getAccountWithRecordsByUUIDAndUser_Username(uuid, username).orElseThrow(EntityNotFoundException::new);
-        Stream<Record> sorted = account.getRecords().stream().sorted((f, s) -> s.getCreatedDateTime().compareTo(f.getCreatedDateTime()));
-        account.setRecords(sorted.collect(Collectors.toList()));
-        return this.modelMapper.map(account, AccountDetailsWithRecordsBindingModel.class);
+    public AccountDetailsWithRecordsBindingModel getAccountBindingModelWithRecordByUUID(String accountUUID, String username) {
+        AccountDetailsWithRecordsBindingModel account = this.modelMapper.map(getAccountBindingModelByUUID(accountUUID, username), AccountDetailsWithRecordsBindingModel.class);
+        account.setRecords(this.recordService.getAllRecordsByAccountUUID(accountUUID, username));
+        return account;
     }
 
     @Override

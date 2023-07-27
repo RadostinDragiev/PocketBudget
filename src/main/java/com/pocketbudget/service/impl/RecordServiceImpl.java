@@ -55,7 +55,7 @@ public class RecordServiceImpl implements RecordService {
         BigDecimal recordAmount = record.getAmount();
         switch (action) {
             case DEPOSIT:
-                changeAccountBalance(account, accountBalance.add(recordAmount));
+                updateAccountBalance(account, accountBalance.add(recordAmount));
                 break;
             case WITHDRAW:
                 withdrawOperation(account, record);
@@ -113,7 +113,7 @@ public class RecordServiceImpl implements RecordService {
         BigDecimal amountAfterWithdraw = accountBalance.subtract(recordAmount);
         int compareTo = amountAfterWithdraw.compareTo(BigDecimal.ZERO);
         if (compareTo == 1 || compareTo == 0) {
-            changeAccountBalance(account, accountBalance.subtract(recordAmount));
+            updateAccountBalance(account, accountBalance.subtract(recordAmount));
         } else {
             throw new WithdrawCreationException(WITHDRAW_FAILED);
         }
@@ -124,13 +124,13 @@ public class RecordServiceImpl implements RecordService {
             Account targetAccount = this.accountService.getAccountByUUID(targetAccountUUID);
             targetAccount.setBalance(targetAccount.getBalance().add(record.getAmount()));
             this.accountService.updateAccount(targetAccountUUID, this.modelMapper.map(targetAccount, AccountAddServiceModel.class));
-            changeAccountBalance(account, account.getBalance().subtract(record.getAmount()));
+            updateAccountBalance(account, account.getBalance().subtract(record.getAmount()));
         } else {
             throw new EntityNotFoundException(INVALID_ACCOUNT);
         }
     }
 
-    private void changeAccountBalance(Account account, BigDecimal balance) {
+    private void updateAccountBalance(Account account, BigDecimal balance) {
         account.setBalance(balance);
     }
 }
