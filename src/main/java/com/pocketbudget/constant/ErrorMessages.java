@@ -16,6 +16,7 @@ public class ErrorMessages {
     public static final String LAST_NAME_VALIDATION = "Last name must be between 2 and 30 characters long.";
 
 //    Exception messages
-    public static final String WITHDRAW_FAILED = "Failed to create withdraw. Please try again later.";
+    public static final String INSUFFICIENT_FUNDS = "Insufficient funds available in the account.";
     public static final String INVALID_ACCOUNT = "Invalid target account.";
+    public static final String ACCOUNT_OWNED_BY_THE_USER = "Target account not owned by the user.";
 }

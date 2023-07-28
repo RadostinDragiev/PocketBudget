@@ -12,5 +12,6 @@ public enum Category {
     FINANCIAL,
     INVESTMENTS,
     INCOME,
-    OTHER
+    OTHER,
+    TRANSFER
 }

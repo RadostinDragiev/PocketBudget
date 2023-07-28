@@ -16,7 +16,7 @@ import java.math.BigDecimal;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class Record extends BaseEntity {
+public class Record extends BaseEntity implements Cloneable {
     @Enumerated(EnumType.STRING)
     private Action action;
 
@@ -31,4 +31,16 @@ public class Record extends BaseEntity {
 
     @ManyToOne(targetEntity = Account.class)
     private Account account;
+
+    @OneToOne(cascade = CascadeType.ALL)
+    private Record relatedRecord;
+
+    @Override
+    public Record clone() {
+        try {
+            return (Record) super.clone();
+        } catch (CloneNotSupportedException e) {
+            throw new AssertionError();
+        }
+    }
 }

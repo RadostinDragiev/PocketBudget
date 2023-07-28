@@ -23,7 +23,7 @@ public class RecordAddBindingModel {
     @NotNull(message = "Action must not be null")
     private Action action;
 
-    private String targetAccountUUID;
+    private String targetAccount;
 
     @Min(value = 0, message = AMOUNT_NOT_NEGATIVE)
     private BigDecimal amount;

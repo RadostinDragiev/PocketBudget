@@ -15,7 +15,7 @@ import java.math.BigDecimal;
 @AllArgsConstructor
 public class RecordAddServiceModel {
     private Action action;
-    private String targetAccountUUID;
+    private String targetAccount;
     private BigDecimal amount;
     private Category category;
     private String notes;

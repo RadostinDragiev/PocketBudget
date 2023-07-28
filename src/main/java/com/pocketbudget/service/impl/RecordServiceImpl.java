@@ -7,6 +7,7 @@ import com.pocketbudget.model.binding.RecordDetailsBindingModel;
 import com.pocketbudget.model.entity.Account;
 import com.pocketbudget.model.entity.Record;
 import com.pocketbudget.model.entity.enums.Action;
+import com.pocketbudget.model.entity.enums.Category;
 import com.pocketbudget.model.service.AccountAddServiceModel;
 import com.pocketbudget.model.service.RecordAddServiceModel;
 import com.pocketbudget.repository.RecordRepository;
@@ -55,21 +56,18 @@ public class RecordServiceImpl implements RecordService {
         BigDecimal recordAmount = record.getAmount();
         switch (action) {
             case DEPOSIT:
-                updateAccountBalance(account, accountBalance.add(recordAmount));
+                account.setBalance(accountBalance.add(recordAmount));
                 break;
             case WITHDRAW:
                 withdrawOperation(account, record);
                 break;
             case TRANSFER:
-                transferOperation(account, record, recordAddServiceModel.getTargetAccountUUID());
+                transferOperation(account, record, recordAddServiceModel.getTargetAccount());
                 break;
         }
 
-        this.accountService.updateAccount(accountUUID, this.modelMapper.map(account, AccountAddServiceModel.class));
-        Record savedRecord = this.recordRepository.saveAndFlush(record);
-
         return Optional
-                .ofNullable(this.modelMapper.map(savedRecord, RecordAddBindingModel.class))
+                .ofNullable(this.modelMapper.map(saveRecord(record, account), RecordAddBindingModel.class))
                 .orElseThrow(EntityNotFoundException::new);
     }
 
@@ -94,12 +92,19 @@ public class RecordServiceImpl implements RecordService {
         int deleteResult = this.recordRepository.deleteRecordByUUIDAndAccount_UUID(recordUUID, accountUUID);
         if (deleteResult != 0) {
             Account account = this.accountService.getAccountByUUID(accountUUID);
-            // TODO: Add Transfer option
             switch (record.getAction()) {
                 case DEPOSIT:
                     account.setBalance(account.getBalance().subtract(record.getAmount()));
                     break;
                 case WITHDRAW:
+                    account.setBalance(account.getBalance().add(record.getAmount().negate()));
+                    break;
+                case TRANSFER:
+                    Record relatedRecord = record.getRelatedRecord();
+                    Account relatedAccount = this.accountService.getAccountByUUID(relatedRecord.getAccount().getUUID());
+                    relatedAccount.setBalance(relatedAccount.getBalance().subtract(relatedRecord.getAmount()));
+                    this.accountService.updateAccount(relatedRecord.getAccount().getUUID(), this.modelMapper.map(relatedAccount, AccountAddServiceModel.class));
+
                     account.setBalance(account.getBalance().add(record.getAmount().negate()));
                     break;
             }
@@ -112,34 +117,61 @@ public class RecordServiceImpl implements RecordService {
     /**
      * compareTo : -1 (less); 0 (equal); 1 (greater);
      *
-     * @param account Account
-     * @param record  Record
+     * @param firstAmount  BigDecimal
+     * @param secondAmount BigDecimal
      */
-    private void withdrawOperation(Account account, Record record) {
-        BigDecimal recordAmount = record.getAmount();
-        BigDecimal accountBalance = account.getBalance();
-        BigDecimal amountAfterWithdraw = accountBalance.subtract(recordAmount);
+    private boolean compareAmount(BigDecimal firstAmount, BigDecimal secondAmount) {
+        boolean result = false;
+
+        BigDecimal amountAfterWithdraw = firstAmount.subtract(secondAmount);
         int compareTo = amountAfterWithdraw.compareTo(BigDecimal.ZERO);
         if (compareTo == 1 || compareTo == 0) {
-            updateAccountBalance(account, accountBalance.subtract(recordAmount));
+            result = true;
+        }
+        return result;
+    }
+
+    private void withdrawOperation(Account account, Record record) {
+        BigDecimal accountBalance = account.getBalance();
+        BigDecimal recordAmount = record.getAmount();
+        if (compareAmount(accountBalance, recordAmount)) {
+            account.setBalance(accountBalance.subtract(recordAmount));
             record.setAmount(record.getAmount().negate());
         } else {
-            throw new WithdrawCreationException(WITHDRAW_FAILED);
+            throw new WithdrawCreationException(INSUFFICIENT_FUNDS);
         }
     }
 
     private void transferOperation(Account account, Record record, String targetAccountUUID) {
         if (!targetAccountUUID.isEmpty()) {
-            Account targetAccount = this.accountService.getAccountByUUID(targetAccountUUID);
-            targetAccount.setBalance(targetAccount.getBalance().add(record.getAmount()));
-            this.accountService.updateAccount(targetAccountUUID, this.modelMapper.map(targetAccount, AccountAddServiceModel.class));
-            updateAccountBalance(account, account.getBalance().subtract(record.getAmount()));
+            if (compareAmount(account.getBalance(), record.getAmount())) {
+                record.setCategory(Category.TRANSFER);
+
+                Account targetAccount = this.accountService.getAccountByUUID(targetAccountUUID);
+                if (!account.getUser().getUUID().equals(targetAccount.getUser().getUUID())) {
+                    throw new IllegalArgumentException(ACCOUNT_OWNED_BY_THE_USER);
+                }
+                targetAccount.setBalance(targetAccount.getBalance().add(record.getAmount()));
+
+                Record targetAccountRecord = record.clone();
+                targetAccountRecord.setAccount(targetAccount);
+                targetAccountRecord.setRelatedRecord(record);
+
+                record.setRelatedRecord(targetAccountRecord);
+
+                withdrawOperation(account, record);
+
+                this.accountService.updateAccount(targetAccountUUID, this.modelMapper.map(targetAccount, AccountAddServiceModel.class));
+            } else {
+                throw new WithdrawCreationException(INSUFFICIENT_FUNDS);
+            }
         } else {
             throw new EntityNotFoundException(INVALID_ACCOUNT);
         }
     }
 
-    private void updateAccountBalance(Account account, BigDecimal balance) {
-        account.setBalance(balance);
+    private Record saveRecord(Record record, Account account) {
+        this.accountService.updateAccount(account.getUUID(), this.modelMapper.map(account, AccountAddServiceModel.class));
+        return this.recordRepository.saveAndFlush(record);
     }
 }
