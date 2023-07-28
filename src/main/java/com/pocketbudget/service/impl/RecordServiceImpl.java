@@ -100,7 +100,7 @@ public class RecordServiceImpl implements RecordService {
                     account.setBalance(account.getBalance().subtract(record.getAmount()));
                     break;
                 case WITHDRAW:
-                    account.setBalance(account.getBalance().add(record.getAmount()));
+                    account.setBalance(account.getBalance().add(record.getAmount().negate()));
                     break;
             }
             AccountAddBindingModel updateAccount = this.accountService.updateAccount(accountUUID, this.modelMapper.map(account, AccountAddServiceModel.class));
@@ -122,6 +122,7 @@ public class RecordServiceImpl implements RecordService {
         int compareTo = amountAfterWithdraw.compareTo(BigDecimal.ZERO);
         if (compareTo == 1 || compareTo == 0) {
             updateAccountBalance(account, accountBalance.subtract(recordAmount));
+            record.setAmount(record.getAmount().negate());
         } else {
             throw new WithdrawCreationException(WITHDRAW_FAILED);
         }
