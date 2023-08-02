@@ -13,5 +13,7 @@ public interface RecordService {
 
     List<RecordDetailsBindingModel> getAllRecordsByAccountUUID(String accountUUID, String username);
 
+    RecordAddBindingModel updateRecord(String recordUUID, String accountUUID, String username, RecordAddServiceModel recordAddServiceModel);
+
     boolean deleteRecord(String accountUUID, String recordUUID, String username);
 }

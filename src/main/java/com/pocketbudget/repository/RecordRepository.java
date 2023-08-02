@@ -13,5 +13,7 @@ public interface RecordRepository extends JpaRepository<Record, String> {
 
     List<Record> getAllByAccount_UUIDAndAccount_User_UsernameOrderByCreatedDateTimeDesc(String accountUUID, String username);
 
+    List<Record> getAllByUUIDOrRelatedRecordUUIDAndAccount_UUIDAndAccount_User_Username(String recordUUID, String relatedRecordUUID, String accountUUID, String username);
+
     int deleteRecordByUUIDAndAccount_UUID(String recordUUID, String accountUUID);
 }

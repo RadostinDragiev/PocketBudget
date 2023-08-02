@@ -85,6 +85,58 @@ public class RecordServiceImpl implements RecordService {
     }
 
     @Override
+    public RecordAddBindingModel updateRecord(String recordUUID, String accountUUID, String username, RecordAddServiceModel recordAddServiceModel) {
+        List<Record> recordList = this.recordRepository.getAllByUUIDOrRelatedRecordUUIDAndAccount_UUIDAndAccount_User_Username(recordUUID, recordUUID, accountUUID, username);
+        if (recordList.isEmpty()) {
+            throw new EntityNotFoundException();
+        }
+
+        Record record = recordList.get(0);
+        if (record.compareTo(this.modelMapper.map(recordAddServiceModel, Record.class)) == 0) {
+            return this.modelMapper.map(record, RecordAddBindingModel.class);
+        }
+
+        Account account = this.accountService.getAccountByUUID(accountUUID);
+        if (!record.getAction().equals(recordAddServiceModel.getAction())) {
+            record.setAction(recordAddServiceModel.getAction());
+            if (record.getAction().equals(Action.WITHDRAW)) {
+                account.setBalance(account.getBalance().subtract(record.getAmount().multiply(new BigDecimal("2"))));
+            } else if (record.getAction().equals(Action.DEPOSIT)) {
+                account.setBalance(account.getBalance().add(record.getAmount().negate().multiply(new BigDecimal("2"))));
+            }
+            record.setAmount(record.getAmount().negate());
+        }
+
+        // FIXME: Remove check for negative funds on account
+        BigDecimal recordAmount = record.getAmount();
+        BigDecimal recordAddServiceModelAmount = recordAddServiceModel.getAmount();
+        BigDecimal amountAfterWithdraw = recordAddServiceModelAmount.subtract(recordAmount);
+        int compareTo = amountAfterWithdraw.compareTo(BigDecimal.ZERO);
+        if (compareTo != 0) {
+            account.setBalance(account.getBalance().add(amountAfterWithdraw));
+            record.setAmount(recordAddServiceModelAmount);
+        }
+
+        if (!record.getCategory().equals(recordAddServiceModel.getCategory())) {
+            record.setCategory(recordAddServiceModel.getCategory());
+        }
+
+        if (!record.getNotes().equals(recordAddServiceModel.getNotes())) {
+            record.setNotes(recordAddServiceModel.getNotes());
+        }
+
+        Record updatedRecord = saveRecord(record, account);
+        if (record.getRelatedRecord() != null && !record.getRelatedRecord().getAccount().getUUID().equals(recordAddServiceModel.getTargetAccount())) {
+            RecordAddServiceModel relatedRecordAddServiceModel = this.modelMapper.map(record, RecordAddServiceModel.class);
+            relatedRecordAddServiceModel.setCategory(record.getCategory().equals(Category.TRANSFER_WITHDRAW) ? Category.TRANSFER_DEPOSIT : Category.TRANSFER_WITHDRAW);
+            relatedRecordAddServiceModel.setAmount(relatedRecordAddServiceModel.getAmount().negate());
+            updateRecord(record.getRelatedRecord().getUUID(), record.getRelatedRecord().getAccount().getUUID(), username, relatedRecordAddServiceModel);
+        }
+
+        return this.modelMapper.map(updatedRecord, RecordAddBindingModel.class);
+    }
+
+    @Override
     @Transactional
     public boolean deleteRecord(String accountUUID, String recordUUID, String username) {
         Record record = this.recordRepository.getRecordByUUIDAndAccount_UUIDAndAccount_User_Username(recordUUID, accountUUID, username)
@@ -145,7 +197,7 @@ public class RecordServiceImpl implements RecordService {
     private void transferOperation(Account account, Record record, String targetAccountUUID) {
         if (!targetAccountUUID.isEmpty()) {
             if (compareAmount(account.getBalance(), record.getAmount())) {
-                record.setCategory(Category.TRANSFER);
+                record.setCategory(Category.TRANSFER_WITHDRAW);
 
                 Account targetAccount = this.accountService.getAccountByUUID(targetAccountUUID);
                 if (!account.getUser().getUUID().equals(targetAccount.getUser().getUUID())) {
@@ -154,6 +206,7 @@ public class RecordServiceImpl implements RecordService {
                 targetAccount.setBalance(targetAccount.getBalance().add(record.getAmount()));
 
                 Record targetAccountRecord = record.clone();
+                targetAccountRecord.setCategory(Category.TRANSFER_DEPOSIT);
                 targetAccountRecord.setAccount(targetAccount);
                 targetAccountRecord.setRelatedRecord(record);
 

@@ -16,7 +16,7 @@ import java.math.BigDecimal;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class Record extends BaseEntity implements Cloneable {
+public class Record extends BaseEntity implements Cloneable, Comparable<Record> {
     @Enumerated(EnumType.STRING)
     private Action action;
 
@@ -42,5 +42,17 @@ public class Record extends BaseEntity implements Cloneable {
         } catch (CloneNotSupportedException e) {
             throw new AssertionError();
         }
+    }
+
+    @Override
+    public int compareTo(Record r) {
+        boolean isActionEqual = this.getAction().equals(r.getAction());
+        boolean isAmountEqual = this.getAmount().compareTo(r.getAmount()) == 0;
+        boolean isCategoryEqual = this.getCategory().equals(r.getCategory());
+        boolean isNotesEqual = this.getNotes().equals(r.getNotes());
+        if (isActionEqual && isAmountEqual && isCategoryEqual && isNotesEqual) {
+            return 0;
+        }
+        return -1;
     }
 }

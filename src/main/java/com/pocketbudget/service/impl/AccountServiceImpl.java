@@ -63,14 +63,10 @@ public class AccountServiceImpl implements AccountService {
     }
 
 
-    // Get all accounts by:
-    // action;
-    // amount in range;
-    // category;
-    // date created;
     @Override
     public AccountDetailsWithRecordsBindingModel getAccountBindingModelWithRecordByUUID(String accountUUID, String username) {
         AccountDetailsWithRecordsBindingModel account = this.modelMapper.map(getAccountBindingModelByUUID(accountUUID, username), AccountDetailsWithRecordsBindingModel.class);
+        account.setCurrencyName(Currency.getInstance(account.getCurrency()).getDisplayName());
         account.setRecords(this.recordService.getAllRecordsByAccountUUID(accountUUID, username));
         return account;
     }

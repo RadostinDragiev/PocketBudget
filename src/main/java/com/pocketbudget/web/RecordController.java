@@ -3,6 +3,8 @@ package com.pocketbudget.web;
 import com.pocketbudget.common.annotation.TrackLatency;
 import com.pocketbudget.model.binding.RecordAddBindingModel;
 import com.pocketbudget.model.binding.RecordDetailsBindingModel;
+import com.pocketbudget.model.entity.enums.Action;
+import com.pocketbudget.model.entity.enums.Category;
 import com.pocketbudget.model.service.RecordAddServiceModel;
 import com.pocketbudget.service.AccountService;
 import com.pocketbudget.service.RecordService;
@@ -72,8 +74,21 @@ public class RecordController {
     @TrackLatency
     @DeleteMapping("/{accountId}/deleteRecord/{recordId}")
     public ResponseEntity<Void> deleteRecord(@AuthenticationPrincipal UserDetails userDetails,
-                                              @PathVariable("accountId") String accountUUID,
-                                              @PathVariable("recordId") String recordUUID) {
+                                             @PathVariable("accountId") String accountUUID,
+                                             @PathVariable("recordId") String recordUUID) {
         return this.recordService.deleteRecord(accountUUID, recordUUID, userDetails.getUsername()) ? ResponseEntity.ok().build() : ResponseEntity.badRequest().build();
+    }
+
+    @TrackLatency
+    @PatchMapping("/{accountId}/updateRecord/{recordId}")
+    public ResponseEntity<RecordAddBindingModel> updateRecord(@AuthenticationPrincipal UserDetails userDetails,
+                                                              @PathVariable("accountId") String accountUUID,
+                                                              @PathVariable("recordId") String recordUUID,
+                                                              @Valid @RequestBody RecordAddBindingModel recordAddBindingModel) {
+        RecordAddServiceModel recordAddServiceModel = this.modelMapper.map(recordAddBindingModel, RecordAddServiceModel.class);
+        if (recordAddServiceModel.getAction().equals(Action.WITHDRAW) || recordAddServiceModel.getCategory().equals(Category.TRANSFER_WITHDRAW)) {
+            recordAddServiceModel.setAmount(recordAddServiceModel.getAmount().negate());
+        }
+        return ResponseEntity.ok(this.recordService.updateRecord(recordUUID, accountUUID, userDetails.getUsername(), recordAddServiceModel));
     }
 }

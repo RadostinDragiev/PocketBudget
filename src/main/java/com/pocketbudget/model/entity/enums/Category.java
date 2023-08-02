@@ -13,5 +13,6 @@ public enum Category {
     INVESTMENTS,
     INCOME,
     OTHER,
-    TRANSFER
+    TRANSFER_WITHDRAW,
+    TRANSFER_DEPOSIT
 }
