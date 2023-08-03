@@ -58,7 +58,8 @@ public class AccountServiceImpl implements AccountService {
 
     @Override
     public AccountDetailsBindingModel getAccountBindingModelByUUID(String uuid, String username) {
-        Account account = this.accountRepository.getAccountByUUIDAndUser_Username(uuid, username).orElseThrow(EntityNotFoundException::new);
+        Account account = this.accountRepository.getAccountByUUIDAndUser_Username(uuid, username)
+                .orElseThrow(EntityNotFoundException::new);
         return this.modelMapper.map(account, AccountDetailsBindingModel.class);
     }
 
@@ -81,6 +82,9 @@ public class AccountServiceImpl implements AccountService {
                 .collect(Collectors.toList());
         accounts.forEach(accountDetailsBindingModel -> accountDetailsBindingModel.setCurrencyName(Currency.getInstance(accountDetailsBindingModel.getCurrency()).getDisplayName()));
 
+        if (accounts.isEmpty()) {
+            throw new EntityNotFoundException();
+        }
         return accounts;
     }
 
@@ -100,7 +104,8 @@ public class AccountServiceImpl implements AccountService {
 
     @Override
     public AccountAddBindingModel updateAccount(String accountUUID, AccountAddServiceModel accountAddServiceModel) {
-        Account account = this.accountRepository.findById(accountUUID).orElseThrow(EntityNotFoundException::new);
+        Account account = this.accountRepository.findById(accountUUID)
+                .orElseThrow(EntityNotFoundException::new);
         if (!account.getName().equals(accountAddServiceModel.getName())) {
             account.setName(accountAddServiceModel.getName());
         }
@@ -119,7 +124,8 @@ public class AccountServiceImpl implements AccountService {
 
     @Override
     public Account getAccountByUUID(String accountUUID) {
-        return this.accountRepository.findById(accountUUID).orElseThrow(EntityNotFoundException::new);
+        return this.accountRepository.findById(accountUUID)
+                .orElseThrow(EntityNotFoundException::new);
     }
 
     @Override

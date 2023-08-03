@@ -33,7 +33,7 @@ public class AccountController {
     @GetMapping("/getAccounts")
     public ResponseEntity<List<AccountDetailsBindingModel>> getAllAccounts(@AuthenticationPrincipal UserDetails userDetails) {
         List<AccountDetailsBindingModel> allAccounts = this.accountService.getAllAccounts(userDetails.getUsername());
-        return !allAccounts.isEmpty() ? ResponseEntity.ok(allAccounts) : ResponseEntity.notFound().build();
+        return ResponseEntity.ok(allAccounts);
     }
 
     @TrackLatency

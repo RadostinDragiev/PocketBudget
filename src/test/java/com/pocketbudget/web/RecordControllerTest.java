@@ -112,7 +112,7 @@ class RecordControllerTest {
 
     @WithMockUser(username = USERNAME)
     @Test
-    void testGetRecordWIthInvalidRecordUUIDReturnNotFound() throws Exception {
+    void testGetRecordWithInvalidRecordUUIDReturnNotFound() throws Exception {
         Account account = this.accountRepository.findAll().get(0);
 
         this.mockMvc.perform(get("/records/{accountId}/getRecord/{recordId}", account.getUUID(), DUMMY_UUID)
@@ -178,7 +178,7 @@ class RecordControllerTest {
 
     @WithMockUser(username = USERNAME)
     @Test
-    void testCreateRecordOK() throws Exception {
+    void testCreateRecordReturnOK() throws Exception {
         RecordAddBindingModel recordAddBindingModel = new RecordAddBindingModel(null, RECORD_ACTION_DEPOSIT, null, CORRECT_AMOUNT, RECORD_CATEGORY_FOOD, NOTES);
 
         String uuid = this.accountRepository.findAll().get(0).getUUID();
