@@ -11,7 +11,7 @@ import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
 
-import static com.pocketbudget.constant.ErrorMessages.AMOUNT_NOT_NEGATIVE;
+import static com.pocketbudget.constant.ErrorMessages.*;
 
 @Getter
 @Setter
@@ -20,7 +20,7 @@ import static com.pocketbudget.constant.ErrorMessages.AMOUNT_NOT_NEGATIVE;
 public class RecordAddBindingModel {
     private String UUID;
 
-    @NotNull(message = "Action must not be null")
+    @NotNull(message = ACTION_MUST_NOT_BE_NULL)
     private Action action;
 
     private String targetAccount;
@@ -28,7 +28,7 @@ public class RecordAddBindingModel {
     @Min(value = 0, message = AMOUNT_NOT_NEGATIVE)
     private BigDecimal amount;
 
-    @NotNull(message = "Category must not be null")
+    @NotNull(message = CATEGORY_MUST_NOT_BE_NULL)
     private Category category;
 
     private String notes;

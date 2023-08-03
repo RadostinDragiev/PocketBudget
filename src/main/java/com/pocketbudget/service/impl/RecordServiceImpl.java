@@ -219,7 +219,7 @@ public class RecordServiceImpl implements RecordService {
                 throw new WithdrawCreationException(INSUFFICIENT_FUNDS);
             }
         } else {
-            throw new EntityNotFoundException(INVALID_ACCOUNT);
+            throw new IllegalArgumentException(INVALID_ACCOUNT);
         }
     }
 

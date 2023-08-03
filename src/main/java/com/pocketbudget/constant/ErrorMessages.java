@@ -6,7 +6,9 @@ public class ErrorMessages {
     public static final String INVALID_CURRENCY = "Invalid currency.";
 
 //    Record validation messages
-    public static final String AMOUNT_NOT_NEGATIVE = "Amount must not be negative.";
+    public static final String ACTION_MUST_NOT_BE_NULL = "Action must not be null!";
+    public static final String AMOUNT_NOT_NEGATIVE = "Amount must not be negative!";
+    public static final String CATEGORY_MUST_NOT_BE_NULL = "Category must not be null!";
 
 //    User validation messages
     public static final String USERNAME_SIZE_VALIDATION = "Username must be between 6 and 20 characters long.";
