@@ -31,11 +31,11 @@ public class AuthenticationController {
 
     @TrackLatency
     @PostMapping("/register")
-    public ResponseEntity<RegisterUserBindingModel> registerUser(@Valid @RequestBody RegisterUserBindingModel registerUserBindingModel) {
+    public ResponseEntity<Void> registerUser(@Valid @RequestBody RegisterUserBindingModel registerUserBindingModel) {
         registerUserBindingModel.setPassword(this.passwordEncoder.encode(registerUserBindingModel.getPassword()));
         RegisterUserBindingModel registerUser = this.userService.registerUser(this.modelMapper.map(registerUserBindingModel, RegisterUserServiceModel.class));
         this.userRegisterEventPublisher.publishUserRegisteredEvent(registerUser.getEmail());
-        return ResponseEntity.ok(registerUser);
+        return ResponseEntity.ok().build();
     }
 
 }

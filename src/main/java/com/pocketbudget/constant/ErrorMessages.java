@@ -12,7 +12,7 @@ public class ErrorMessages {
 
 //    User validation messages
     public static final String USERNAME_SIZE_VALIDATION = "Username must be between 6 and 20 characters long.";
-    public static final String PASSWORD_MIN_SIZE = "Password must be at least 8 characters long.";
+    public static final String PASSWORD_MIN_SIZE = "Password must be between 6 and 25 characters long.";
     public static final String EMAIL_VALIDATION = "Email must be a valid email address.";
     public static final String FIRST_NAME_VALIDATION = "First name must be between 2 and 30 characters long.";
     public static final String LAST_NAME_VALIDATION = "Last name must be between 2 and 30 characters long.";

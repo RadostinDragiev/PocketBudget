@@ -1,6 +1,5 @@
 package com.pocketbudget.model.binding;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -22,17 +21,18 @@ public class RegisterUserBindingModel {
     private String username;
 
     @NotNull
-    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
-    @Length(min = 8, message = PASSWORD_MIN_SIZE)
+    @Length(min = 8, max = 25, message = PASSWORD_MIN_SIZE)
     private String password;
 
     @NotNull
     @Email(message = EMAIL_VALIDATION)
     private String email;
 
+    @NotNull
     @Length(min = 2, max = 30, message = FIRST_NAME_VALIDATION)
     private String firstName;
 
+    @NotNull
     @Length(min = 2, max = 30, message = LAST_NAME_VALIDATION)
     private String lastName;
 }

@@ -18,6 +18,6 @@ public class UserRegisterEventListener implements ApplicationListener<UserRegist
 
     @Override
     public void onApplicationEvent(UserRegisterEvent customEvent) {
-        this.emailManager.sendSSLEmail(customEvent.getUserEmail(), "Welcome to our app", new File("src/main/resources/welcome-message.html"));
+        this.emailManager.sendSSLEmail(customEvent.getUserEmail(), "Welcome to our app", new File("src/main/resources/html/welcome-message.html"));
     }
 }
