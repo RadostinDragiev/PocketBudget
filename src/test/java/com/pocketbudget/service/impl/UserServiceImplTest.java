@@ -5,14 +5,14 @@ import com.pocketbudget.model.entity.UserRole;
 import com.pocketbudget.model.entity.enums.UserRoleEnum;
 import com.pocketbudget.model.service.RegisterUserServiceModel;
 import com.pocketbudget.repository.UserRepository;
-import com.pocketbudget.repository.UserRoleRepository;
 import com.pocketbudget.service.UserRoleService;
-import com.pocketbudget.service.UserService;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.stubbing.Answer;
 import org.modelmapper.ModelMapper;
 
 import javax.persistence.EntityNotFoundException;
@@ -20,9 +20,7 @@ import java.time.LocalDateTime;
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class UserServiceImplTest {
@@ -39,23 +37,13 @@ class UserServiceImplTest {
     private UserRepository userRepository;
 
     @Mock
-    private UserRoleRepository userRoleRepository;
-
-    @Mock
     private UserRoleService userRoleService;
 
-    @Mock
+    @Spy
     private ModelMapper modelMapper;
 
-    @Mock
-    private UserService userService;
-
-
-    @BeforeEach
-    void setUp() {
-        this.userService = new UserServiceImpl(userRepository, userRoleService, modelMapper);
-        this.userRoleService = new UserRoleServiceImpl(this.userRoleRepository);
-    }
+    @InjectMocks
+    private UserServiceImpl userService;
 
     @Test()
     void testGetUserByUsernameShouldReturnUser() {
@@ -72,20 +60,31 @@ class UserServiceImplTest {
         assertThrows(EntityNotFoundException.class, () -> this.userService.getUserByUsername(USERNAME));
     }
 
+    // TODO: Refactor registerUser method
     @Test
     void testRegisterUserShouldReturnUser() {
 
         RegisterUserServiceModel registerUserServiceModel =
                 new RegisterUserServiceModel(USERNAME, PASSWORD, EMAIL, FIRST_NAME, LAST_NAME);
 
-
         when(this.userRoleService.getRoles(UserRoleEnum.USER))
-                .thenReturn(new HashSet<>(List.of(new UserRole(UserRoleEnum.USER))));
+                .thenReturn(Set.of(new UserRole(UserRoleEnum.USER)));
+        when(this.userRepository.saveAndFlush(any(User.class)))
+                .thenAnswer((Answer<User>) invocation -> {
+                    Object[] arguments = invocation.getArguments();
+
+                    if (arguments != null && arguments.length > 0 && arguments[0] != null) {
+                        User customer = (User) arguments[0];
+                        customer.setUUID(UUID);
+                        return customer;
+                    }
+
+                    return null;
+                });
 
         this.userService.registerUser(registerUserServiceModel);
 
-        //verify(this.userRoleRepository.getUserRoleByRole(any(UserRoleEnum.class)));
-        verify(this.userRepository.saveAndFlush(any(User.class)));
+        verify(this.userRepository, times(1)).saveAndFlush(isA(User.class));
     }
 
     @Test
@@ -121,7 +120,7 @@ class UserServiceImplTest {
 
     private User setUser() {
         User user = new User();
-        user.setUUID("123456789");
+        user.setUUID(UUID);
         user.setUsername(USERNAME);
         user.setPassword(PASSWORD);
         user.setEmail(EMAIL);
